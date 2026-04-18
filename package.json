@@ -4,14 +4,25 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "api:download": "node scripts/sync-api.js",
+    "api:generate": "orval",
+    "predev": "npm run api:download && npm run api:generate",
     "dev": "vite",
+    "prebuild": "npm run api:download && npm run api:generate",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.0.0",
+    "@mui/material": "^9.0.0",
+    "axios": "^1.15.0",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "react-hook-form": "^7.72.1",
+    "react-router-dom": "^7.14.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
@@ -23,6 +34,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
+    "orval": "^8.8.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.0",
     "vite": "^8.0.4"

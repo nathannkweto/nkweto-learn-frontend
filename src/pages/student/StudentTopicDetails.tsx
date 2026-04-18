@@ -1,0 +1,75 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import {
+    Container, Typography, Box, Button, Card, CardContent,
+    Grid, CircularProgress, Alert, Breadcrumbs, Link
+} from '@mui/material';
+import { getOpenAPIDefinition } from '../../api/generated/endpoints';
+import type { TopicsTopicIdGet200Response } from '../../api/generated/models';
+
+const api = getOpenAPIDefinition();
+
+export const StudentTopicDetails = () => {
+    const { topicId } = useParams<{ topicId: string }>();
+    const navigate = useNavigate();
+    const [topic, setTopic] = useState<TopicsTopicIdGet200Response | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchTopic = async () => {
+            if (!topicId) return;
+            try {
+                const response = await api.topicsTopicIdGet(topicId);
+                setTopic(response.data);
+            } catch (err: any) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchTopic();
+    }, [topicId]);
+
+    if (loading) return <Box display="flex" justifyContent="center" mt={10}><CircularProgress /></Box>;
+    if (!topic) return <Container mt={4}><Alert severity="error">Topic not found.</Alert></Container>;
+
+    return (
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <Breadcrumbs sx={{ mb: 2 }}>
+                <Link color="inherit" sx={{ cursor: 'pointer' }} onClick={() => navigate('/student/dashboard')}>
+                    Dashboard
+                </Link>
+                <Typography color="text.primary">{topic.title}</Typography>
+            </Breadcrumbs>
+
+            <Typography variant="h4" gutterBottom>{topic.title}</Typography>
+            <Typography variant="subtitle1" color="textSecondary" mb={4}>{topic.description}</Typography>
+
+            <Typography variant="h5" mb={2}>Available Quizzes</Typography>
+
+            {(!topic.quizzes || topic.quizzes.length === 0) ? (
+                <Typography color="textSecondary">No quizzes here yet. Check back later!</Typography>
+            ) : (
+                <Grid container spacing={3}>
+                    {topic.quizzes.map((quiz) => (
+                        <Grid item xs={12} sm={6} md={4} key={quiz.id}>
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="h6" gutterBottom>{quiz.title}</Typography>
+                                    <Button
+                                        variant="contained"
+                                        fullWidth
+                                        sx={{ mt: 2 }}
+                                        onClick={() => navigate(`/student/quizzes/${quiz.id}/take`)}
+                                    >
+                                        Take Quiz
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
+            )}
+        </Container>
+    );
+};
