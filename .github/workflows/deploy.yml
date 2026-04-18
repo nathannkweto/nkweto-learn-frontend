@@ -31,7 +31,7 @@ jobs:
 
       - name: Install dependencies
         # npm ci is better for CI/CD as it strictly follows package-lock.json
-        run: npm ci
+        run: npm install
 
       - name: Build project
         # Because Spring Boot isn't running here, the prebuild script will warn
