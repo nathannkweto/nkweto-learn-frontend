@@ -60,7 +60,7 @@ export default function DashboardLayout() {
                                 <ListItemText primary="Topics" />
                             </ListItemButton>
                         </ListItem>
-                        {user?.role === 'TEACHER' && (
+                        {user?.role === 'teacher' && (
                             <ListItem disablePadding>
                                 <ListItemButton onClick={() => navigate('/teacher/topics/new')}>
                                     <ListItemText primary="Create Topic" />

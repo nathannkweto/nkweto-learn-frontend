@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import {
     Box, Button, TextField, Typography, Container, Paper, Link, Alert
 } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 // Note: Adjust the import name if Orval named the function slightly differently (e.g., getAuthLoginPost)
 import { getOpenAPIDefinition } from '../api/generated/endpoints';
 import type { LoginRequest } from '../api/generated/models';

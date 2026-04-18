@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import {
     Box, Button, TextField, Typography, Container, Paper, Link, Alert, MenuItem
 } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { getOpenAPIDefinition } from '../api/generated/endpoints';
 import type { RegisterRequest } from '../api/generated/models';
 

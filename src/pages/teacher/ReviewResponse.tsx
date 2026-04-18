@@ -1,4 +1,4 @@
-import { Box, Typography, Paper, Chip, Divider, Grid } from '@mui/material';
+import { Box, Typography, Paper, Chip, Grid } from '@mui/material';
 
 // Mock submission data
 const submissionDetails = {
@@ -24,20 +24,20 @@ const submissionDetails = {
 
 export default function ReviewResponse() {
     return (
-        <Box maxWidth="md" mx="auto">
+        <Box sx={{ maxWidth: 'md', mx: 'auto' }}>
             <Typography variant="h5" gutterBottom>Review Submission</Typography>
 
             <Paper sx={{ p: 3, mb: 4, bgcolor: '#f8f9fa' }}>
                 <Grid container spacing={2}>
-                    <Grid item xs={12} sm={4}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                         <Typography variant="subtitle2" color="textSecondary">Student</Typography>
                         <Typography variant="body1">{submissionDetails.studentName}</Typography>
                     </Grid>
-                    <Grid item xs={12} sm={4}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                         <Typography variant="subtitle2" color="textSecondary">Quiz</Typography>
                         <Typography variant="body1">{submissionDetails.quizTitle}</Typography>
                     </Grid>
-                    <Grid item xs={12} sm={4}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                         <Typography variant="subtitle2" color="textSecondary">Score</Typography>
                         <Typography variant="h6" color="primary">{submissionDetails.score}</Typography>
                     </Grid>
@@ -50,8 +50,8 @@ export default function ReviewResponse() {
                         {idx + 1}. {ans.questionText}
                     </Typography>
 
-                    <Box display="flex" flexDirection="column" gap={1} mt={2}>
-                        <Box display="flex" alignItems="center" gap={1}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Typography variant="body2" color="textSecondary" sx={{ width: 120 }}>Student Answer:</Typography>
                             <Chip
                                 label={ans.studentAnswer}
@@ -61,7 +61,7 @@ export default function ReviewResponse() {
                         </Box>
 
                         {!ans.isCorrect && (
-                            <Box display="flex" alignItems="center" gap={1}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Typography variant="body2" color="textSecondary" sx={{ width: 120 }}>Correct Answer:</Typography>
                                 <Chip label={ans.correctAnswer} color="success" size="small" />
                             </Box>
