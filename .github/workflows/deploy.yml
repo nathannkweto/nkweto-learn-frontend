@@ -26,7 +26,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Vite requires Node 18+, using 20 is safest
+          node-version: '22' # Vite requires Node 18+, using 20 is safest
           cache: 'npm'
 
       - name: Install dependencies
