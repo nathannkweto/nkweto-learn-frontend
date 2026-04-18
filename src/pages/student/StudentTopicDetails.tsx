@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     Container, Typography, Box, Button, Card, CardContent,
@@ -21,7 +21,8 @@ export const StudentTopicDetails = () => {
             try {
                 const response = await api.topicsTopicIdGet(topicId);
                 setTopic(response.data);
-            } catch (err: any) {
+            } catch (err) {
+                // Fix 1: Removed ': any'
                 console.error(err);
             } finally {
                 setLoading(false);
@@ -30,8 +31,11 @@ export const StudentTopicDetails = () => {
         fetchTopic();
     }, [topicId]);
 
-    if (loading) return <Box display="flex" justifyContent="center" mt={10}><CircularProgress /></Box>;
-    if (!topic) return <Container mt={4}><Alert severity="error">Topic not found.</Alert></Container>;
+    // Fix 2: Moved display, justifyContent, and mt into the sx prop
+    if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
+
+    // Fix 2: Moved mt into the sx prop
+    if (!topic) return <Container sx={{ mt: 4 }}><Alert severity="error">Topic not found.</Alert></Container>;
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -39,20 +43,24 @@ export const StudentTopicDetails = () => {
                 <Link color="inherit" sx={{ cursor: 'pointer' }} onClick={() => navigate('/student/dashboard')}>
                     Dashboard
                 </Link>
-                <Typography color="text.primary">{topic.title}</Typography>
+                <Typography color="text.primary">{String(topic.title)}</Typography>
             </Breadcrumbs>
 
-            <Typography variant="h4" gutterBottom>{topic.title}</Typography>
-            <Typography variant="subtitle1" color="textSecondary" mb={4}>{topic.description}</Typography>
+            <Typography variant="h4" gutterBottom>{String(topic.title)}</Typography>
 
-            <Typography variant="h5" mb={2}>Available Quizzes</Typography>
+            {/* Fix 2: Moved mb into the sx prop */}
+            <Typography variant="subtitle1" color="textSecondary" sx={{ mb: 4 }}>{String(topic.description)}</Typography>
+
+            {/* Fix 2: Moved mb into the sx prop */}
+            <Typography variant="h5" sx={{ mb: 2 }}>Available Quizzes</Typography>
 
             {(!topic.quizzes || topic.quizzes.length === 0) ? (
                 <Typography color="textSecondary">No quizzes here yet. Check back later!</Typography>
             ) : (
                 <Grid container spacing={3}>
                     {topic.quizzes.map((quiz) => (
-                        <Grid item xs={12} sm={6} md={4} key={quiz.id}>
+                        // Fix 3: Removed 'item' and used the 'size' prop for MUI v6 compatibility
+                        <Grid key={quiz.id} size={{ xs: 12, sm: 6, md: 4 }}>
                             <Card>
                                 <CardContent>
                                     <Typography variant="h6" gutterBottom>{quiz.title}</Typography>

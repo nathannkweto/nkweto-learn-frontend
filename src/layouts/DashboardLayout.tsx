@@ -1,19 +1,14 @@
-import { useState } from 'react';
 import {
     Box,
     AppBar,
     Toolbar,
     Typography,
     Drawer,
-    IconButton,
-    useTheme,
-    useMediaQuery,
     List,
     ListItem,
     ListItemButton,
     ListItemText
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 

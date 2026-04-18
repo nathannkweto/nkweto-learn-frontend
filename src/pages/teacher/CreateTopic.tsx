@@ -18,7 +18,8 @@ export default function CreateTopic() {
     };
 
     return (
-        <Box maxWidth="md" mx="auto">
+        // Fix 1: Moved maxWidth and mx into the sx prop
+        <Box sx={{ maxWidth: 'md', mx: 'auto' }}>
             <Typography variant="h5" gutterBottom>Create New Topic</Typography>
             <Paper sx={{ p: 4 }}>
                 <TextField
@@ -49,7 +50,8 @@ export default function CreateTopic() {
                     <MenuItem value="published">Published</MenuItem>
                 </TextField>
 
-                <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
+                {/* Fix 2: Moved mt, display, justifyContent, and gap into the sx prop */}
+                <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                     <Button variant="outlined" onClick={() => navigate('/dashboard')}>Cancel</Button>
                     <Button variant="contained" color="primary" onClick={handleSave}>Save Topic</Button>
                 </Box>

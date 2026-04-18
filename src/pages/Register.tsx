@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
@@ -7,6 +7,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { getOpenAPIDefinition } from '../api/generated/endpoints';
 import type { RegisterRequest } from '../api/generated/models';
+
 const api = getOpenAPIDefinition();
 
 export const Register = () => {
@@ -16,14 +17,13 @@ export const Register = () => {
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterRequest>({
         defaultValues: {
-            role: 'student' // Default to student
+            role: 'STUDENT' // Default to student
         }
     });
 
     const onSubmit = async (data: RegisterRequest) => {
         setErrorMsg(null);
         try {
-            // 3. Call the function off the api object:
             const response = await api.authRegisterPost(data);
             const { token, user } = response.data;
 
@@ -34,9 +34,12 @@ export const Register = () => {
             } else {
                 navigate('/student/dashboard', { replace: true });
             }
-        } catch (error: any) {
+        } catch (error) {
+            // Safely cast the error to access Axios-specific error properties without using 'any'
+            const axiosError = error as { response?: { data?: { message?: string } } };
+
             console.error('Registration failed:', error);
-            setErrorMsg(error.response?.data?.message || 'Registration failed. Please try again.');
+            setErrorMsg(axiosError.response?.data?.message || 'Registration failed. Please try again.');
         }
     };
 
@@ -105,7 +108,9 @@ export const Register = () => {
                         >
                             {isSubmitting ? 'Creating account...' : 'Sign Up'}
                         </Button>
-                        <Box textAlign="center">
+
+                        {/* Moved textAlign into the sx prop here */}
+                        <Box sx={{ textAlign: 'center' }}>
                             <Link component={RouterLink} to="/login" variant="body2">
                                 {"Already have an account? Sign In"}
                             </Link>

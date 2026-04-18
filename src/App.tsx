@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { AuthProvider } from './context/AuthContext';
@@ -40,7 +39,7 @@ function App() {
               </Route>
 
               {/* Protected Student Routes */}
-              <Route element={<ProtectedRoute allowedRoles={['student']} />}>
+              <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
                 <Route path="/student/dashboard" element={<StudentDashboard />} />
                 <Route path="/student/topics/:topicId" element={<StudentTopicDetails />} />
                 <Route path="/student/quizzes/:quizId/take" element={<TakeQuiz />} />

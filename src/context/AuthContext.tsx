@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import type { User } from '../api/generated/models'; // Adjust path if Orval saved it elsewhere
+import { createContext, useState, useEffect, useCallback } from 'react';
+import type { ReactNode } from 'react'; // Fix: Explicit type import
+import type { User } from '../api/generated/models';
 import { setupAxiosInterceptors } from '../api/axiosSetup';
 
-interface AuthContextType {
+export interface AuthContextType {
     user: User | null;
     token: string | null;
     login: (token: string, user: User) => void;
@@ -10,12 +11,21 @@ interface AuthContextType {
     isAuthenticated: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Export the context so the hook can access it from another file
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
     const [isInitializing, setIsInitializing] = useState(true);
+
+    // Fix: Moved logout ABOVE the useEffect and wrapped in useCallback
+    const logout = useCallback(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setToken(null);
+        setUser(null);
+    }, []);
 
     // Initialize auth state from local storage on first load
     useEffect(() => {
@@ -31,20 +41,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setupAxiosInterceptors(logout);
 
         setIsInitializing(false);
-    }, []);
+    }, [logout]); // Added logout to dependency array
 
     const login = (newToken: string, newUser: User) => {
         localStorage.setItem('token', newToken);
         localStorage.setItem('user', JSON.stringify(newUser));
         setToken(newToken);
         setUser(newUser);
-    };
-
-    const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setToken(null);
-        setUser(null);
     };
 
     if (isInitializing) {
@@ -56,12 +59,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             {children}
         </AuthContext.Provider>
     );
-};
-
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     Container, Typography, Box, Button, Card, CardContent,
@@ -23,7 +23,7 @@ export const TopicDetails = () => {
                 setLoading(true);
                 const response = await api.topicsTopicIdGet(topicId);
                 setTopic(response.data);
-            } catch (err: any) {
+            } catch (err) {
                 console.error('Failed to fetch topic details', err);
                 setError('Could not load topic details.');
             } finally {
@@ -33,8 +33,8 @@ export const TopicDetails = () => {
         fetchTopic();
     }, [topicId]);
 
-    if (loading) return <Box display="flex" justifyContent="center" mt={10}><CircularProgress /></Box>;
-    if (error || !topic) return <Container mt={4}><Alert severity="error">{error}</Alert></Container>;
+    if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
+    if (error || !topic) return <Container sx={{ mt: 4 }}><Alert severity="error">{error}</Alert></Container>;
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -42,13 +42,13 @@ export const TopicDetails = () => {
                 <Link color="inherit" sx={{ cursor: 'pointer' }} onClick={() => navigate('/teacher/dashboard')}>
                     Dashboard
                 </Link>
-                <Typography color="text.primary">{topic.title}</Typography>
+                <Typography color="text.primary">{String(topic.title)}</Typography>
             </Breadcrumbs>
 
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
                 <Box>
-                    <Typography variant="h4" component="h1" gutterBottom>{topic.title}</Typography>
-                    <Typography variant="subtitle1" color="textSecondary">{topic.description}</Typography>
+                    <Typography variant="h4" component="h1" gutterBottom>{String(topic.title)}</Typography>
+                    <Typography variant="subtitle1" color="textSecondary">{String(topic.description)}</Typography>
                 </Box>
                 <Button
                     variant="contained"
@@ -59,14 +59,14 @@ export const TopicDetails = () => {
                 </Button>
             </Box>
 
-            <Typography variant="h5" mb={2}>Quizzes</Typography>
+            <Typography variant="h5" sx={{ mb: 2 }}>Quizzes</Typography>
 
             {(!topic.quizzes || topic.quizzes.length === 0) ? (
                 <Typography color="textSecondary">No quizzes created for this topic yet.</Typography>
             ) : (
                 <Grid container spacing={3}>
                     {topic.quizzes.map((quiz) => (
-                        <Grid item xs={12} sm={6} md={4} key={quiz.id}>
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={quiz.id}>
                             <Card>
                                 <CardContent>
                                     <Typography variant="h6">{quiz.title}</Typography>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Container, Typography, Box, Button, Card, CardContent, CardActions,
     Grid, Chip, CircularProgress, Dialog, DialogTitle, DialogContent,
@@ -30,7 +30,7 @@ export const TeacherDashboard = () => {
             setLoading(true);
             const response = await api.topicsGet();
             setTopics(response.data);
-        } catch (err: any) {
+        } catch (err) {
             console.error('Failed to fetch topics', err);
             setError('Could not load topics. Please try again.');
         } finally {
@@ -48,15 +48,16 @@ export const TeacherDashboard = () => {
             setIsDialogOpen(false);
             reset(); // Clear the form
             fetchTopics(); // Refresh the list
-        } catch (err: any) {
+        } catch (err) {
+            const axiosError = err as { response?: { data?: { message?: string } } };
             console.error('Failed to create topic', err);
-            setError(err.response?.data?.message || 'Failed to create topic.');
+            setError(axiosError.response?.data?.message || 'Failed to create topic.');
         }
     };
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
                 <Typography variant="h4" component="h1">
                     Teacher Dashboard
                 </Typography>
@@ -68,20 +69,20 @@ export const TeacherDashboard = () => {
             {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
             {loading ? (
-                <Box display="flex" justifyContent="center" mt={10}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
                     <CircularProgress />
                 </Box>
             ) : topics.length === 0 ? (
-                <Typography variant="body1" color="textSecondary" align="center" mt={10}>
+                <Typography variant="body1" color="textSecondary" align="center" sx={{ mt: 10 }}>
                     You haven't created any topics yet. Click "Create Topic" to get started.
                 </Typography>
             ) : (
                 <Grid container spacing={4}>
                     {topics.map((topic) => (
-                        <Grid item key={topic.id} xs={12} sm={6} md={4}>
+                        <Grid key={topic.id} size={{ xs: 12, sm: 6, md: 4 }}>
                             <Card elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                                 <CardContent sx={{ flexGrow: 1 }}>
-                                    <Box display="flex" justifyContent="space-between" mb={1}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                                         <Typography variant="overline" color="textSecondary">
                                             {topic.category}
                                         </Typography>
@@ -99,7 +100,6 @@ export const TeacherDashboard = () => {
                                     </Typography>
                                 </CardContent>
                                 <CardActions>
-                                    {/* We will route this to the quiz builder/viewer in the next step */}
                                     <Button size="small" onClick={() => navigate(`/teacher/topics/${topic.id}`)}>
                                         Manage Quizzes
                                     </Button>

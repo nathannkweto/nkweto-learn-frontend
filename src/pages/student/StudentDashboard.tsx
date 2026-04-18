@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Container, Typography, Box, Card, CardContent, CardActions,
@@ -20,7 +20,8 @@ export const StudentDashboard = () => {
             try {
                 const response = await api.topicsGet();
                 setTopics(response.data);
-            } catch (err: any) {
+            } catch (err) {
+                // Fix 1: Removed the ': any' typing
                 console.error('Failed to fetch topics', err);
                 setError('Could not load topics.');
             } finally {
@@ -35,19 +36,26 @@ export const StudentDashboard = () => {
             <Typography variant="h4" component="h1" gutterBottom>
                 Student Dashboard
             </Typography>
-            <Typography variant="subtitle1" color="textSecondary" mb={4}>
+
+            {/* Fix 2: Moved 'mb' into the sx prop */}
+            <Typography variant="subtitle1" color="textSecondary" sx={{ mb: 4 }}>
                 Explore available topics and take quizzes to test your knowledge.
             </Typography>
 
             {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+
             {loading ? (
-                <Box display="flex" justifyContent="center" mt={10}><CircularProgress /></Box>
+                // Fix 2: Moved 'display', 'justifyContent', and 'mt' into the sx prop
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
+                    <CircularProgress />
+                </Box>
             ) : topics.length === 0 ? (
                 <Typography variant="body1" color="textSecondary">No topics available right now.</Typography>
             ) : (
                 <Grid container spacing={4}>
                     {topics.map((topic) => (
-                        <Grid item key={topic.id} xs={12} sm={6} md={4}>
+                        // Fix 3: Removed 'item' and grouped breakpoints into the 'size' prop for MUI v6
+                        <Grid key={topic.id} size={{ xs: 12, sm: 6, md: 4 }}>
                             <Card elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                                 <CardContent sx={{ flexGrow: 1 }}>
                                     <Chip label={topic.category} size="small" sx={{ mb: 1 }} />

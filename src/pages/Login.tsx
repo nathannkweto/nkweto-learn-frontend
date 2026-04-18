@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 // Note: Adjust the import name if Orval named the function slightly differently (e.g., getAuthLoginPost)
 import { getOpenAPIDefinition } from '../api/generated/endpoints';
 import type { LoginRequest } from '../api/generated/models';
+
 const api = getOpenAPIDefinition();
 
 export const Login = () => {
@@ -26,14 +27,18 @@ export const Login = () => {
 
             login(token, user);
 
-            if (user.role === 'TEACHER') {
+            // Fix 1: Changed 'TEACHER' to lowercase 'teacher'
+            if (user.role === 'teacher') {
                 navigate('/teacher/dashboard', { replace: true });
             } else {
                 navigate('/student/dashboard', { replace: true });
             }
-        } catch (error: any) {
+        } catch (error) {
+            // Fix 2: Safely cast the error without using 'any'
+            const axiosError = error as { response?: { data?: { message?: string } } };
+
             console.error('Login failed:', error);
-            setErrorMsg(error.response?.data?.message || 'Invalid email or password.');
+            setErrorMsg(axiosError.response?.data?.message || 'Invalid email or password.');
         }
     };
 
@@ -81,7 +86,9 @@ export const Login = () => {
                         >
                             {isSubmitting ? 'Signing in...' : 'Sign In'}
                         </Button>
-                        <Box textAlign="center">
+
+                        {/* Fix 3: Moved textAlign into the sx prop */}
+                        <Box sx={{ textAlign: 'center' }}>
                             <Link component={RouterLink} to="/register" variant="body2">
                                 {"Don't have an account? Sign Up"}
                             </Link>

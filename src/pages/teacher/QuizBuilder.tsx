@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm, useFieldArray } from 'react-hook-form';
 import {
     Container, Typography, Box, Button, Card, CardContent,
-    TextField, MenuItem, IconButton, Divider, Alert, Checkbox, FormControlLabel, Grid
+    TextField, MenuItem, Alert, Checkbox, FormControlLabel, Grid
 } from '@mui/material';
 // Optional: If you want icons, run `npm install @mui/icons-material`
 // import DeleteIcon from '@mui/icons-material/Delete';
@@ -42,9 +42,11 @@ export const QuizBuilder = () => {
             };
             await api.quizzesPost(payload);
             navigate(`/teacher/topics/${topicId}`);
-        } catch (err: any) {
+        } catch (err) {
+            // Fix 1: Safely handle error without ': any'
+            const axiosError = err as { response?: { data?: { message?: string } } };
             console.error('Failed to create quiz:', err);
-            setErrorMsg(err.response?.data?.message || 'Failed to create the quiz. Please check your inputs.');
+            setErrorMsg(axiosError.response?.data?.message || 'Failed to create the quiz. Please check your inputs.');
         }
     };
 
@@ -74,15 +76,14 @@ export const QuizBuilder = () => {
                     return (
                         <Card key={question.id} sx={{ mb: 3, position: 'relative', overflow: 'visible' }}>
                             <CardContent>
-                                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                                    <Typography variant="h6">Question {qIndex + 1}</Typography>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>                                    <Typography variant="h6">Question {qIndex + 1}</Typography>
                                     <Button color="error" onClick={() => removeQuestion(qIndex)} disabled={questions.length === 1}>
                                         Remove Question
                                     </Button>
                                 </Box>
 
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={8}>
+                                    <Grid size={{ xs: 12, sm: 8 }}>
                                         <TextField
                                             fullWidth
                                             label="Question Text"
@@ -90,7 +91,7 @@ export const QuizBuilder = () => {
                                             {...register(`questions.${qIndex}.text` as const, { required: true })}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={4}>
+                                    <Grid size={{ xs: 12, sm: 4 }}>
                                         <TextField
                                             fullWidth
                                             select
@@ -105,19 +106,16 @@ export const QuizBuilder = () => {
                                 </Grid>
 
                                 {/* Simplified Options UI depending on type */}
-                                <Box mt={3} p={2} bgcolor="#f8f9fa" borderRadius={2}>
-                                    {questionType === 'short_answer' ? (
+                                <Box sx={{ mt: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>                                    {questionType === 'short_answer' ? (
                                         <Typography variant="body2" color="textSecondary">
                                             Students will type their answer. This will be flagged for manual review.
                                         </Typography>
                                     ) : (
                                         <>
-                                            <Typography variant="subtitle2" mb={1}>Options (Check the correct ones)</Typography>
-                                            {/* For simplicity in this step, we hardcode 4 options for MCQs.
+                                            <Typography variant="subtitle2" sx={{ mb: 1 }}>Options (Check the correct ones)</Typography>                                            {/* For simplicity in this step, we hardcode 4 options for MCQs.
                           A nested useFieldArray can be added here if you want dynamic option counts. */}
                                             {[0, 1, 2, 3].map((oIndex) => (
-                                                <Box key={oIndex} display="flex" alignItems="center" mb={1} gap={2}>
-                                                    <FormControlLabel
+                                                <Box key={oIndex} sx={{ display: 'flex', alignItems: 'center', mb: 1, gap: 2 }}>                                                    <FormControlLabel
                                                         control={<Checkbox {...register(`questions.${qIndex}.options.${oIndex}.is_correct` as const)} />}
                                                         label=""
                                                     />
@@ -146,8 +144,7 @@ export const QuizBuilder = () => {
                     + Add Another Question
                 </Button>
 
-                <Box display="flex" justifyContent="flex-end" gap={2}>
-                    <Button onClick={() => navigate(`/teacher/topics/${topicId}`)} disabled={isSubmitting}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>                    <Button onClick={() => navigate(`/teacher/topics/${topicId}`)} disabled={isSubmitting}>
                         Cancel
                     </Button>
                     <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>

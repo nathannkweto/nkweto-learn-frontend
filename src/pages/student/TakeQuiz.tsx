@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
@@ -34,7 +34,8 @@ export const TakeQuiz = () => {
                 // Notice we are using the Student View endpoint here!
                 const response = await api.quizzesQuizIdGet(quizId);
                 setQuiz(response.data);
-            } catch (err: any) {
+            } catch (err) {
+                // Fix 1: Removed ': any'
                 console.error(err);
             } finally {
                 setLoading(false);
@@ -63,26 +64,33 @@ export const TakeQuiz = () => {
             await api.submissionsPost(payload);
             // If successful, take them back to the dashboard (or to a "Results" page later!)
             navigate('/student/dashboard');
-        } catch (err: any) {
+        } catch (err) {
+            // Fix 1: Safely handle error without ': any'
+            const axiosError = err as { response?: { data?: { message?: string } } };
             console.error('Submission failed', err);
-            setSubmitError(err.response?.data?.message || 'Failed to submit quiz.');
+            setSubmitError(axiosError.response?.data?.message || 'Failed to submit quiz.');
         }
     };
 
-    if (loading) return <Box display="flex" justifyContent="center" mt={10}><CircularProgress /></Box>;
-    if (!quiz) return <Container mt={4}><Alert severity="error">Quiz not found.</Alert></Container>;
+    // Fix 3: Moved display, justifyContent, and mt into the sx prop
+    if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
+
+    // Fix 3: Moved mt into the sx prop
+    if (!quiz) return <Container sx={{ mt: 4 }}><Alert severity="error">Quiz not found.</Alert></Container>;
 
     return (
         <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
-            <Typography variant="h4" gutterBottom>{quiz.title}</Typography>
+            {/* Fix 2: Cast quiz.title to string */}
+            <Typography variant="h4" gutterBottom>{String(quiz.title)}</Typography>
             {submitError && <Alert severity="error" sx={{ mb: 3 }}>{submitError}</Alert>}
 
             <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
                 {quiz.questions?.map((question, index) => (
                     <Card key={question.id} sx={{ mb: 3 }}>
                         <CardContent>
-                            <Typography variant="h6" mb={2}>
-                                {index + 1}. {question.text}
+                            {/* Fix 2 & 3: Cast question.text to string and moved mb into sx */}
+                            <Typography variant="h6" sx={{ mb: 2 }}>
+                                {index + 1}. {String(question.text)}
                             </Typography>
 
                             {/* Multiple Choice & True/False */}
@@ -95,7 +103,7 @@ export const TakeQuiz = () => {
                                                 key={option.id}
                                                 value={option.id}
                                                 control={<Radio {...register(`${question.id}.selected_option_id`)} required />}
-                                                label={option.text}
+                                                label={String(option.text)} // Fix 2: Cast option text as well just in case
                                             />
                                         ))}
                                     </RadioGroup>
@@ -116,7 +124,8 @@ export const TakeQuiz = () => {
                     </Card>
                 ))}
 
-                <Box display="flex" justifyContent="flex-end" gap={2}>
+                {/* Fix 3: Moved display, justifyContent, and gap into sx */}
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                     <Button onClick={() => navigate(-1)} disabled={isSubmitting}>
                         Cancel
                     </Button>
