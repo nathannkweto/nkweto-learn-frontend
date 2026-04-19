@@ -17,7 +17,7 @@ export const Register = () => {
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterRequest>({
         defaultValues: {
-            role: 'STUDENT' // Default to student
+            role: 'student' // Default to student
         }
     });
 
