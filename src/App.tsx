@@ -12,6 +12,7 @@ import { StudentTopicDetails } from './pages/student/StudentTopicDetails';
 import { TakeQuiz } from './pages/student/TakeQuiz';
 import { PageEditor } from "./pages/teacher/PageEditor.tsx";
 import { CreatePage } from "./pages/teacher/CreatePage.tsx";
+import {StudentPageView} from "./pages/student/StudentPageView.tsx";
 
 // Basic MUI Theme (We can expand this later)
 const theme = createTheme({
@@ -47,6 +48,7 @@ function App() {
                 <Route path="/student/dashboard" element={<StudentDashboard />} />
                 <Route path="/student/topics/:topicId" element={<StudentTopicDetails />} />
                 <Route path="/student/quizzes/:quizId/take" element={<TakeQuiz />} />
+                <Route path="/student/topics/:topicId/pages/:pageId" element={<StudentPageView />} />
               </Route>
 
               {/* Fallback Route */}
