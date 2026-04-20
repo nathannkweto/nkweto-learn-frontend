@@ -10,6 +10,8 @@ import { QuizBuilder } from './pages/teacher/QuizBuilder';
 import { StudentDashboard } from './pages/student/StudentDashboard';
 import { StudentTopicDetails } from './pages/student/StudentTopicDetails';
 import { TakeQuiz } from './pages/student/TakeQuiz';
+import { PageEditor } from "./pages/teacher/PageEditor.tsx";
+import { CreatePage } from "./pages/teacher/CreatePage.tsx";
 
 // Basic MUI Theme (We can expand this later)
 const theme = createTheme({
@@ -36,6 +38,8 @@ function App() {
                 <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
                 <Route path="/teacher/topics/:topicId" element={<TopicDetails />} />
                 <Route path="/teacher/topics/:topicId/create-quiz" element={<QuizBuilder />} />
+                <Route path="/teacher/topics/:topicId/pages/create" element={<CreatePage />} />
+                <Route path="/teacher/pages/:pageId/edit" element={<PageEditor />} />
               </Route>
 
               {/* Protected Student Routes */}
