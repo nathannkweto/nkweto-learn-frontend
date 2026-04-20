@@ -18,7 +18,7 @@ interface ListItemData {
 }
 
 interface BlockFormData {
-    type: 'TEXT' | 'CODE' | 'IMAGE' | 'LIST'; // Ensure LIST is here
+    type: 'PARAGRAPH' | 'CODE' | 'IMAGE' | 'LIST'; // Ensure LIST is here
     content: string;
     language?: string;
     orderIndex: number;
@@ -46,7 +46,7 @@ export const PageEditor = () => {
 
     // 4. Extracted 'control' from useForm for the field array
     const { register: registerBlock, handleSubmit: handleBlockSubmit, reset: resetBlock, watch: watchBlock, control } = useForm<BlockFormData>({
-        defaultValues: { type: 'TEXT', content: '', language: '', orderIndex: 0, listItems: [] }
+        defaultValues: { type: 'PARAGRAPH', content: '', language: '', orderIndex: 0, listItems: [] }
     });
 
     const blockType = watchBlock('type');
@@ -175,7 +175,7 @@ export const PageEditor = () => {
                         </Box>
 
                         {/* 7. Display logic adjusted to include LIST viewing */}
-                        {(String(block.type).toUpperCase() === 'TEXT' || (String(block.type).toUpperCase() === 'LIST' && block.content)) && (
+                        {(String(block.type).toUpperCase() === 'PARAGRAPH' || (String(block.type).toUpperCase() === 'LIST' && block.content)) && (
                             <Typography variant="body1" sx={{ mb: String(block.type).toUpperCase() === 'LIST' ? 1 : 0 }}>
                                 {block.content}
                             </Typography>
@@ -220,7 +220,7 @@ export const PageEditor = () => {
                         <Grid container spacing={2} sx={{ mb: 2 }}>
                             <Grid size={{ xs: 12, sm: 4 }}>
                                 <TextField select fullWidth label="Block Type" {...registerBlock('type')}>
-                                    <MenuItem value="TEXT">Text / Paragraph</MenuItem>
+                                    <MenuItem value="PARAGRAPH">Paragraph</MenuItem>
                                     <MenuItem value="LIST">Bulleted List</MenuItem> {/* 8. Added List Type to Dropdown */}
                                     <MenuItem value="CODE">Code Snippet</MenuItem>
                                     <MenuItem value="IMAGE">Image URL</MenuItem>
