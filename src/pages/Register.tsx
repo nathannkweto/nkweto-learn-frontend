@@ -29,7 +29,7 @@ export const Register = () => {
 
             login(token, user);
 
-            if (user.role === 'TEACHER') {
+            if (user.role === 'teacher') {
                 navigate('/teacher/dashboard', { replace: true });
             } else {
                 navigate('/student/dashboard', { replace: true });
