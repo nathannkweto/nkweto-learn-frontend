@@ -17,7 +17,7 @@ export const Register = () => {
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterRequest>({
         defaultValues: {
-            role: 'student' // Default to student
+            role: 'STUDENT' // Default to student
         }
     });
 
@@ -29,7 +29,7 @@ export const Register = () => {
 
             login(token, user);
 
-            if (user.role === 'teacher') {
+            if (user.role === 'TEACHER') {
                 navigate('/teacher/dashboard', { replace: true });
             } else {
                 navigate('/student/dashboard', { replace: true });

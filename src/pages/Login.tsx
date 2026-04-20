@@ -28,7 +28,7 @@ export const Login = () => {
             login(token, user);
 
             // Fix 1: Changed 'TEACHER' to lowercase 'teacher'
-            if (user.role === 'teacher') {
+            if (user.role === 'TEACHER') {
                 navigate('/teacher/dashboard', { replace: true });
             } else {
                 navigate('/student/dashboard', { replace: true });

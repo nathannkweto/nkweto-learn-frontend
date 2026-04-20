@@ -32,14 +32,14 @@ function App() {
               <Route path="/register" element={<Register />} />
 
               {/* Protected Teacher Routes */}
-              <Route element={<ProtectedRoute allowedRoles={['teacher']} />}>
+              <Route element={<ProtectedRoute allowedRoles={['TEACHER']} />}>
                 <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
                 <Route path="/teacher/topics/:topicId" element={<TopicDetails />} />
                 <Route path="/teacher/topics/:topicId/create-quiz" element={<QuizBuilder />} />
               </Route>
 
               {/* Protected Student Routes */}
-              <Route element={<ProtectedRoute allowedRoles={['teacher']} />}>
+              <Route element={<ProtectedRoute allowedRoles={['TEACHER']} />}>
                 <Route path="/student/dashboard" element={<StudentDashboard />} />
                 <Route path="/student/topics/:topicId" element={<StudentTopicDetails />} />
                 <Route path="/student/quizzes/:quizId/take" element={<TakeQuiz />} />
