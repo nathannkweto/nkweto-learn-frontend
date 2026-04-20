@@ -111,7 +111,6 @@ export const PageEditor = () => {
     const handleDeleteBlock = async (blockId: number) => {
         if (!window.confirm('Are you sure you want to delete this block?')) return;
         try {
-            // @ts-expect-error - Suppressing until API client is regenerated
             await api.blocksBlockIdDelete(blockId);
             void fetchPage();
         } catch (err: unknown) {
