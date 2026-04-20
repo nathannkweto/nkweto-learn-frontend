@@ -1,5 +1,5 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import { CssBaseline } from '@mui/material';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Login } from './pages/Login';
@@ -14,20 +14,10 @@ import { PageEditor } from "./pages/teacher/PageEditor.tsx";
 import { CreatePage } from "./pages/teacher/CreatePage.tsx";
 import {StudentPageView} from "./pages/student/StudentPageView.tsx";
 
-// Basic MUI Theme (We can expand this later)
-const theme = createTheme({
-  palette: {
-    primary: { main: '#1976d2' },
-    secondary: { main: '#dc004e' },
-    background: { default: '#f4f6f8' }
-  },
-});
-
 function App() {
   return (
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
         <AuthProvider>
+          <CssBaseline />
           <HashRouter>
             <Routes>
               {/* Public Routes */}
@@ -56,7 +46,6 @@ function App() {
             </Routes>
           </HashRouter>
         </AuthProvider>
-      </ThemeProvider>
   );
 }
 

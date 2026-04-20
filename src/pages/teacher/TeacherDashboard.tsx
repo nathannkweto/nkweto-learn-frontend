@@ -1,166 +1,238 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
-    Container, Typography, Box, Button, Card, CardContent, CardActions,
-    Grid, Chip, CircularProgress, Dialog, DialogTitle, DialogContent,
-    DialogActions, TextField, MenuItem, Alert
+    Container, Typography, Box, Button, Paper, Chip, CircularProgress,
+    Dialog, DialogTitle, DialogContent, DialogActions, TextField,
+    MenuItem, Alert, Stack, Divider, useTheme, useMediaQuery
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { getOpenAPIDefinition } from '../../api/generated/endpoints';
 import type { Topic, TopicCreate } from '../../api/generated/models';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 
 const api = getOpenAPIDefinition();
 
 export const TeacherDashboard = () => {
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
     const [topics, setTopics] = useState<Topic[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    // Form state
     const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<TopicCreate>({
         defaultValues: { status: 'draft' }
     });
 
-    const fetchTopics = async () => {
+    const fetchTopics = useCallback(async () => {
         try {
             setLoading(true);
             const response = await api.topicsGet();
             setTopics(response.data);
-        } catch (err) {
-            console.error('Failed to fetch topics', err);
+        } catch {
             setError('Could not load topics. Please try again.');
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
-        fetchTopics();
-    }, []);
+        // Fix: Missing await for async function call
+        void fetchTopics();
+    }, [fetchTopics]);
 
     const onSubmitTopic = async (data: TopicCreate) => {
         try {
             await api.topicsPost(data);
             setIsDialogOpen(false);
-            reset(); // Clear the form
-            fetchTopics(); // Refresh the list
+            reset();
+            await fetchTopics(); // Fix: Await the refresh
         } catch (err) {
             const axiosError = err as { response?: { data?: { message?: string } } };
-            console.error('Failed to create topic', err);
             setError(axiosError.response?.data?.message || 'Failed to create topic.');
         }
     };
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                <Typography variant="h4" component="h1">
-                    Teacher Dashboard
-                </Typography>
-                <Button variant="contained" color="primary" onClick={() => setIsDialogOpen(true)}>
-                    + Create Topic
+        <Container maxWidth="lg" sx={{ mt: { xs: 2, md: 6 }, mb: 4 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 4 }}>
+                <Button
+                    variant="contained"
+                    startIcon={<AddRoundedIcon />}
+                    onClick={() => setIsDialogOpen(true)}
+                    disableElevation
+                    sx={{
+                        borderRadius: 2,
+                        px: 3,
+                        py: 1,
+                        textTransform: 'none',
+                        fontWeight: 600
+                    }}
+                >
+                    New Topic
                 </Button>
             </Box>
 
-            {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+            {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
 
             {loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
-                    <CircularProgress />
-                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>
             ) : topics.length === 0 ? (
-                <Typography variant="body1" color="textSecondary" align="center" sx={{ mt: 10 }}>
-                    You haven't created any topics yet. Click "Create Topic" to get started.
-                </Typography>
+                <Paper
+                    variant="outlined"
+                    sx={{ p: 6, textAlign: 'center', borderRadius: 4, border: '2px dashed #e0e4e8', bgcolor: 'transparent' }}
+                >
+                    <Typography variant="h6" color="textSecondary">No topics found</Typography>
+                    <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+                        Get started by creating your first educational module.
+                    </Typography>
+                </Paper>
             ) : (
-                <Grid container spacing={4}>
+                <Stack spacing={2}>
                     {topics.map((topic) => (
-                        <Grid key={topic.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                            <Card elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                                <CardContent sx={{ flexGrow: 1 }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                        <Typography variant="overline" color="textSecondary">
+                        <Paper
+                            key={topic.id}
+                            elevation={0}
+                            sx={{
+                                p: { xs: 2, sm: 3 },
+                                borderRadius: 3,
+                                border: '1px solid #edf2f7',
+                                transition: 'all 0.2s ease-in-out',
+                                '&:hover': {
+                                    boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.04)',
+                                    borderColor: 'primary.light',
+                                    transform: 'translateY(-2px)'
+                                }
+                            }}
+                        >
+                            <Box sx={{
+                                display: 'flex',
+                                flexDirection: { xs: 'column', sm: 'row' },
+                                alignItems: { xs: 'flex-start', sm: 'center' },
+                                gap: 2
+                            }}>
+                                <Box sx={{ flexGrow: 1 }}>
+                                    <Stack
+                                        direction="row"
+                                        spacing={1}
+                                        sx={{ mb: 0.5, alignItems: 'center' }}
+                                    >
+                                        <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.main', textTransform: 'uppercase', letterSpacing: 0.5 }}>
                                             {topic.category}
                                         </Typography>
+                                        <Divider orientation="vertical" flexItem sx={{ height: 12, my: 'auto' }} />
                                         <Chip
                                             label={topic.status}
                                             size="small"
+                                            variant="filled" // Fix: "soft" is not a standard variant
                                             color={topic.status === 'published' ? 'success' : 'default'}
+                                            sx={{ height: 20, fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase' }}
                                         />
-                                    </Box>
-                                    <Typography gutterBottom variant="h5" component="h2">
+                                    </Stack>
+                                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
                                         {topic.title}
                                     </Typography>
-                                    <Typography>
+                                    <Typography variant="body2" color="textSecondary" sx={{
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 1,
+                                        WebkitBoxOrient: 'vertical',
+                                        overflow: 'hidden'
+                                    }}>
                                         {topic.description}
                                     </Typography>
-                                </CardContent>
-                                <CardActions>
-                                    <Button size="small" onClick={() => navigate(`/teacher/topics/${topic.id}`)}>
-                                        Manage Quizzes
-                                    </Button>
-                                </CardActions>
-                            </Card>
-                        </Grid>
+                                </Box>
+
+                                <Button
+                                    variant="outlined"
+                                    endIcon={<ChevronRightRoundedIcon />}
+                                    fullWidth={isMobile}
+                                    onClick={() => navigate(`/teacher/topics/${topic.id}`)}
+                                    sx={{
+                                        borderRadius: 2,
+                                        textTransform: 'none',
+                                        fontWeight: 600,
+                                        borderColor: '#e2e8f0',
+                                        color: 'text.primary',
+                                        '&:hover': { borderColor: 'primary.main', backgroundColor: 'rgba(25, 118, 210, 0.04)' }
+                                    }}
+                                >
+                                    Manage
+                                </Button>
+                            </Box>
+                        </Paper>
                     ))}
-                </Grid>
+                </Stack>
             )}
 
-            {/* Create Topic Dialog Modal */}
-            <Dialog open={isDialogOpen} onClose={() => !isSubmitting && setIsDialogOpen(false)} fullWidth maxWidth="sm">
-                <DialogTitle>Create a New Topic</DialogTitle>
+            <Dialog
+                open={isDialogOpen}
+                onClose={() => !isSubmitting && setIsDialogOpen(false)}
+                fullWidth
+                maxWidth="sm"
+                slotProps={{
+                    paper: { sx: { borderRadius: 4, p: 1 } } // Fix: Proper way to pass PaperProps in MUI v6
+                }}
+            >
+                <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>Create a New Topic</DialogTitle>
                 <Box component="form" onSubmit={handleSubmit(onSubmitTopic)} noValidate>
                     <DialogContent>
-                        <TextField
-                            margin="dense"
-                            label="Title"
-                            fullWidth
-                            required
-                            {...register('title', { required: 'Title is required' })}
-                            error={!!errors.title}
-                            helperText={errors.title?.message}
-                        />
-                        <TextField
-                            margin="dense"
-                            label="Description"
-                            fullWidth
-                            multiline
-                            rows={3}
-                            required
-                            {...register('description', { required: 'Description is required' })}
-                            error={!!errors.description}
-                            helperText={errors.description?.message}
-                        />
-                        <TextField
-                            margin="dense"
-                            label="Category"
-                            fullWidth
-                            required
-                            {...register('category', { required: 'Category is required' })}
-                            error={!!errors.category}
-                            helperText={errors.category?.message}
-                        />
-                        <TextField
-                            margin="dense"
-                            select
-                            label="Status"
-                            fullWidth
-                            {...register('status')}
-                        >
-                            <MenuItem value="draft">Draft</MenuItem>
-                            <MenuItem value="published">Published</MenuItem>
-                        </TextField>
+                        <Stack spacing={2.5}>
+                            <TextField
+                                label="Topic Title"
+                                fullWidth
+                                required
+                                {...register('title', { required: 'Title is required' })}
+                                error={!!errors.title}
+                                helperText={errors.title?.message}
+                                slotProps={{ htmlInput: { sx: { borderRadius: 2 } } }}
+                            />
+                            <TextField
+                                label="Description"
+                                fullWidth
+                                required
+                                multiline
+                                rows={3}
+                                {...register('description', { required: 'Description is required' })}
+                                error={!!errors.description}
+                                helperText={errors.description?.message}
+                            />
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                <TextField
+                                    label="Category"
+                                    fullWidth
+                                    required
+                                    {...register('category', { required: 'Category is required' })}
+                                    error={!!errors.category}
+                                    helperText={errors.category?.message}
+                                />
+                                <TextField
+                                    select
+                                    label="Status"
+                                    defaultValue="draft"
+                                    sx={{ width: '160px' }}
+                                    {...register('status')}
+                                >
+                                    <MenuItem value="draft">Draft</MenuItem>
+                                    <MenuItem value="published">Published</MenuItem>
+                                </TextField>
+                            </Box>
+                        </Stack>
                     </DialogContent>
-                    <DialogActions sx={{ px: 3, pb: 2 }}>
-                        <Button onClick={() => setIsDialogOpen(false)} disabled={isSubmitting}>
+                    <DialogActions sx={{ p: 3, pt: 1 }}>
+                        <Button onClick={() => setIsDialogOpen(false)} sx={{ textTransform: 'none', fontWeight: 600 }}>
                             Cancel
                         </Button>
-                        <Button type="submit" variant="contained" disabled={isSubmitting}>
-                            {isSubmitting ? 'Saving...' : 'Create Topic'}
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            disabled={isSubmitting}
+                            disableElevation
+                            sx={{ borderRadius: 2, px: 4, textTransform: 'none', fontWeight: 600 }}
+                        >
+                            {isSubmitting ? 'Creating...' : 'Create Topic'}
                         </Button>
                     </DialogActions>
                 </Box>

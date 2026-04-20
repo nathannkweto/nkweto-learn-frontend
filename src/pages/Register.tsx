@@ -15,8 +15,7 @@ export const Register = () => {
     const { login } = useAuth();
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterRequest>({
-    });
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterRequest>();
 
     const onSubmit = async (data: RegisterRequest) => {
         setErrorMsg(null);
@@ -32,25 +31,66 @@ export const Register = () => {
                 navigate('/student/dashboard', { replace: true });
             }
         } catch (error) {
-            // Safely cast the error to access Axios-specific error properties without using 'any'
             const axiosError = error as { response?: { data?: { message?: string } } };
-
             console.error('Registration failed:', error);
             setErrorMsg(axiosError.response?.data?.message || 'Registration failed. Please try again.');
         }
     };
 
     return (
-        <Container component="main" maxWidth="xs">
-            <Box sx={{ marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Paper elevation={3} sx={{ padding: 4, width: '100%', borderRadius: 2 }}>
-                    <Typography component="h1" variant="h5" align="center" gutterBottom>
-                        Create an Account
+        <Box
+            sx={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f5f7fa',
+                padding: 2,
+            }}
+        >
+            <Container component="main" maxWidth="xs" sx={{ padding: 0 }}>
+                <Paper
+                    elevation={0}
+                    sx={{
+                        padding: { xs: 4, sm: 5 },
+                        width: '100%',
+                        borderRadius: 4,
+                        boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.05)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        backgroundColor: '#ffffff'
+                    }}
+                >
+                    <Typography
+                        component="h1"
+                        variant="h4"
+                        align="center"
+                        gutterBottom
+                        sx={{
+                            color: 'text.primary',
+                            mb: 1,
+                            fontWeight: 700 // Fix: Moved from prop to sx
+                        }}
+                    >
+                        Welcome
                     </Typography>
 
-                    {errorMsg && <Alert severity="error" sx={{ mb: 2 }}>{errorMsg}</Alert>}
+                    <Typography
+                        variant="body2"
+                        align="center"
+                        sx={{ color: 'text.secondary', mb: 4 }}
+                    >
+                        Create your account to join the React lessons
+                    </Typography>
 
-                    <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 1 }}>
+                    {errorMsg && (
+                        <Alert severity="error" sx={{ width: '100%', mb: 3, borderRadius: 2 }}>
+                            {errorMsg}
+                        </Alert>
+                    )}
+
+                    <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ width: '100%' }}>
                         <TextField
                             margin="normal"
                             required
@@ -60,6 +100,9 @@ export const Register = () => {
                             {...register('name', { required: 'Name is required' })}
                             error={!!errors.name}
                             helperText={errors.name?.message}
+                            slotProps={{
+                                htmlInput: { sx: { borderRadius: 2 } }
+                            }}
                         />
                         <TextField
                             margin="normal"
@@ -70,6 +113,9 @@ export const Register = () => {
                             {...register('email', { required: 'Email is required' })}
                             error={!!errors.email}
                             helperText={errors.email?.message}
+                            slotProps={{
+                                htmlInput: { sx: { borderRadius: 2 } }
+                            }}
                         />
                         <TextField
                             margin="normal"
@@ -83,27 +129,51 @@ export const Register = () => {
                             })}
                             error={!!errors.password}
                             helperText={errors.password?.message}
+                            slotProps={{
+                                htmlInput: { sx: { borderRadius: 2 } }
+                            }}
                         />
 
                         <Button
                             type="submit"
                             fullWidth
                             variant="contained"
-                            sx={{ mt: 3, mb: 2, py: 1.5 }}
                             disabled={isSubmitting}
+                            disableElevation
+                            sx={{
+                                mt: 4,
+                                mb: 3,
+                                py: 1.5,
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontSize: '1rem',
+                                fontWeight: 600,
+                                '&:hover': {
+                                    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+                                }
+                            }}
                         >
-                            {isSubmitting ? 'Creating account...' : 'Sign Up'}
+                            {isSubmitting ? 'Creating account...' : 'Create Account'}
                         </Button>
 
-                        {/* Moved textAlign into the sx prop here */}
                         <Box sx={{ textAlign: 'center' }}>
-                            <Link component={RouterLink} to="/login" variant="body2">
-                                {"Already have an account? Sign In"}
+                            <Link
+                                component={RouterLink}
+                                to="/login"
+                                variant="body2"
+                                sx={{
+                                    textDecoration: 'none',
+                                    color: 'primary.main',
+                                    fontWeight: 500,
+                                    '&:hover': { textDecoration: 'underline' }
+                                }}
+                            >
+                                {"Click here to Login if you have an account"}
                             </Link>
                         </Box>
                     </Box>
                 </Paper>
-            </Box>
-        </Container>
+            </Container>
+        </Box>
     );
 };

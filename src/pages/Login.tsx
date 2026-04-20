@@ -5,7 +5,6 @@ import {
     Box, Button, TextField, Typography, Container, Paper, Link, Alert
 } from '@mui/material';
 import { useAuth } from '../hooks/useAuth';
-// Note: Adjust the import name if Orval named the function slightly differently (e.g., getAuthLoginPost)
 import { getOpenAPIDefinition } from '../api/generated/endpoints';
 import type { LoginRequest } from '../api/generated/models';
 
@@ -21,38 +20,82 @@ export const Login = () => {
     const onSubmit = async (data: LoginRequest) => {
         setErrorMsg(null);
         try {
-            // 3. Call the function off the api object
             const response = await api.authLoginPost(data);
             const { token, user } = response.data;
 
             login(token, user);
 
-            // Fix 1: Changed 'TEACHER' to lowercase 'teacher'
             if (user.role === 'teacher') {
                 navigate('/teacher/dashboard', { replace: true });
             } else {
                 navigate('/student/dashboard', { replace: true });
             }
         } catch (error) {
-            // Fix 2: Safely cast the error without using 'any'
             const axiosError = error as { response?: { data?: { message?: string } } };
-
             console.error('Login failed:', error);
             setErrorMsg(axiosError.response?.data?.message || 'Invalid email or password.');
         }
     };
 
     return (
-        <Container component="main" maxWidth="xs">
-            <Box sx={{ marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Paper elevation={3} sx={{ padding: 4, width: '100%', borderRadius: 2 }}>
-                    <Typography component="h1" variant="h5" align="center" gutterBottom>
-                        Sign in to Nkweto Learn
+        <Box
+            sx={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f5f7fa',
+                padding: 2,
+            }}
+        >
+            <Container component="main" maxWidth="xs" sx={{ padding: 0 }}>
+                <Paper
+                    elevation={0}
+                    sx={{
+                        padding: { xs: 4, sm: 5 },
+                        width: '100%',
+                        borderRadius: 4,
+                        boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.05)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        backgroundColor: '#ffffff'
+                    }}
+                >
+                    <Typography
+                        component="h1"
+                        variant="h4"
+                        align="center"
+                        gutterBottom
+                        sx={{
+                            color: 'text.primary',
+                            mb: 1,
+                            fontWeight: 700 // Fix: Move fontWeight inside sx
+                        }}
+                    >
+                        React Lessons
                     </Typography>
 
-                    {errorMsg && <Alert severity="error" sx={{ mb: 2 }}>{errorMsg}</Alert>}
+                    <Typography
+                        variant="body2"
+                        align="center"
+                        sx={{ color: 'text.secondary', mb: 4 }}
+                    >
+                        Sign in or create an account to start
+                    </Typography>
 
-                    <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 1 }}>
+                    {errorMsg && (
+                        <Alert severity="error" sx={{ width: '100%', mb: 3, borderRadius: 2 }}>
+                            {errorMsg}
+                        </Alert>
+                    )}
+
+                    <Box
+                        component="form"
+                        onSubmit={handleSubmit(onSubmit)}
+                        noValidate
+                        sx={{ width: '100%' }}
+                    >
                         <TextField
                             margin="normal"
                             required
@@ -64,6 +107,10 @@ export const Login = () => {
                             {...register('email', { required: 'Email is required' })}
                             error={!!errors.email}
                             helperText={errors.email?.message}
+                            slotProps={{
+                                htmlInput: { sx: { borderRadius: 2 } }
+                            }}
+                            sx={{ mb: 2 }}
                         />
                         <TextField
                             margin="normal"
@@ -76,26 +123,52 @@ export const Login = () => {
                             {...register('password', { required: 'Password is required' })}
                             error={!!errors.password}
                             helperText={errors.password?.message}
+                            slotProps={{
+                                htmlInput: { sx: { borderRadius: 2 } }
+                            }}
+                            sx={{ mb: 1 }}
                         />
+
                         <Button
                             type="submit"
                             fullWidth
                             variant="contained"
-                            sx={{ mt: 3, mb: 2, py: 1.5 }}
                             disabled={isSubmitting}
+                            disableElevation
+                            sx={{
+                                mt: 3,
+                                mb: 3,
+                                py: 1.5,
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontSize: '1rem',
+                                fontWeight: 600,
+                                '&:hover': {
+                                    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+                                }
+                            }}
                         >
                             {isSubmitting ? 'Signing in...' : 'Sign In'}
                         </Button>
 
-                        {/* Fix 3: Moved textAlign into the sx prop */}
                         <Box sx={{ textAlign: 'center' }}>
-                            <Link component={RouterLink} to="/register" variant="body2">
-                                {"Don't have an account? Sign Up"}
+                            <Link
+                                component={RouterLink}
+                                to="/register"
+                                variant="body2"
+                                sx={{
+                                    textDecoration: 'none',
+                                    color: 'primary.main',
+                                    fontWeight: 500,
+                                    '&:hover': { textDecoration: 'underline' }
+                                }}
+                            >
+                                {"Click here to create an account"}
                             </Link>
                         </Box>
                     </Box>
                 </Paper>
-            </Box>
-        </Container>
+            </Container>
+        </Box>
     );
 };

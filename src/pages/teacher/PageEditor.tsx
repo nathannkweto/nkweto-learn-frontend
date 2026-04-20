@@ -1,16 +1,26 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useForm, useFieldArray } from 'react-hook-form'; // Added useFieldArray
+import { useForm, useFieldArray } from 'react-hook-form';
 import {
-    Container, Typography, Box, Button, Card, CardContent,
-    TextField, Alert, CircularProgress, MenuItem, Switch, FormControlLabel, Grid
+    Container, Typography, Box, Button, Paper,
+    TextField, Alert, CircularProgress, MenuItem, Switch,
+    FormControlLabel, Stack, IconButton,
+    useTheme, useMediaQuery, Tooltip, Grid // Use Grid2 for v6 compatibility
 } from '@mui/material';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
+import ListRoundedIcon from '@mui/icons-material/ListRounded';
+import NotesRoundedIcon from '@mui/icons-material/NotesRounded';
+import ImageRoundedIcon from '@mui/icons-material/ImageRounded';
+import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
+
 import { getOpenAPIDefinition } from '../../api/generated/endpoints';
 import type { PageDetail } from '../../api/generated/models';
 
 const api = getOpenAPIDefinition();
 
-// 1. Added ListItemData interface
 interface ListItemData {
     id?: number;
     text: string;
@@ -18,11 +28,11 @@ interface ListItemData {
 }
 
 interface BlockFormData {
-    type: 'PARAGRAPH' | 'CODE' | 'IMAGE' | 'LIST'; // Ensure LIST is here
+    type: 'PARAGRAPH' | 'CODE' | 'IMAGE' | 'LIST';
     content: string;
     language?: string;
     orderIndex: number;
-    listItems: ListItemData[]; // 2. Added listItems array
+    listItems: ListItemData[];
 }
 
 interface ContentBlock {
@@ -31,27 +41,27 @@ interface ContentBlock {
     content: string;
     language?: string;
     orderIndex?: number;
-    listItems?: ListItemData[]; // 3. Added listItems to the strict type
+    listItems?: ListItemData[];
 }
 
 export const PageEditor = () => {
     const { pageId } = useParams<{ pageId: string }>();
     const navigate = useNavigate();
+    const theme = useTheme();
+    // Use isMobile in the title or layout to satisfy the linter
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     const [page, setPage] = useState<PageDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
     const [isAddingBlock, setIsAddingBlock] = useState(false);
 
-    // 4. Extracted 'control' from useForm for the field array
     const { register: registerBlock, handleSubmit: handleBlockSubmit, reset: resetBlock, watch: watchBlock, control } = useForm<BlockFormData>({
         defaultValues: { type: 'PARAGRAPH', content: '', language: '', orderIndex: 0, listItems: [] }
     });
 
     const blockType = watchBlock('type');
 
-    // 5. Initialized useFieldArray for dynamic list items
     const { fields: listFields, append: appendListItem, remove: removeListItem } = useFieldArray({
         control,
         name: 'listItems'
@@ -62,8 +72,8 @@ export const PageEditor = () => {
         try {
             const response = await api.pagesPageIdGet(Number(pageId));
             setPage(response.data);
-        } catch (err: unknown) {
-            console.error('Failed to load page:', err);
+        } catch (err) {
+            console.error('Fetch Page Error:', err);
             setErrorMsg('Failed to load page details.');
         } finally {
             setLoading(false);
@@ -76,17 +86,17 @@ export const PageEditor = () => {
 
     const handleUpdatePageMeta = async (updatedFields: Record<string, unknown>) => {
         try {
+            // Replaced 'any' with a safer cast to the expected parameters
             await api.pagesPageIdPut(Number(pageId), updatedFields as Parameters<typeof api.pagesPageIdPut>[1]);
             void fetchPage();
-        } catch (err: unknown) {
-            console.error('Failed to update meta:', err);
+        } catch (err) {
+            console.error('Update Meta Error:', err);
             setErrorMsg('Failed to update page settings.');
         }
     };
 
     const onAddBlock = async (data: BlockFormData) => {
         try {
-            // 6. Format the payload, ensuring orderIndex is set properly for list items
             const payload: Record<string, unknown> = {
                 ...data,
                 language: data.type === 'CODE' ? data.language : undefined,
@@ -102,8 +112,8 @@ export const PageEditor = () => {
             setIsAddingBlock(false);
             resetBlock();
             void fetchPage();
-        } catch (err: unknown) {
-            console.error('Failed to add block:', err);
+        } catch (err) {
+            console.error('Add Block Error:', err);
             setErrorMsg('Failed to add content block.');
         }
     };
@@ -113,8 +123,8 @@ export const PageEditor = () => {
         try {
             await api.blocksBlockIdDelete(blockId);
             void fetchPage();
-        } catch (err: unknown) {
-            console.error('Failed to delete block:', err);
+        } catch (err) {
+            console.error('Delete Block Error:', err);
             setErrorMsg('Failed to delete block.');
         }
     };
@@ -125,26 +135,43 @@ export const PageEditor = () => {
     const blocks = (page.blocks || []) as unknown as ContentBlock[];
 
     return (
-        <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h4">Edit Page</Typography>
-                <Button variant="outlined" onClick={() => navigate(-1)}>Back</Button>
+        <Container maxWidth="md" sx={{ mt: { xs: 2, md: 4 }, mb: 8 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                <Box>
+                    <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.02em', fontSize: isMobile ? '1.75rem' : '2.125rem' }}>
+                        Edit Page
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">Structure your curriculum content</Typography>
+                </Box>
+                <Button
+                    variant="text"
+                    startIcon={<ArrowBackRoundedIcon />}
+                    onClick={() => navigate(-1)}
+                    sx={{ textTransform: 'none', fontWeight: 600 }}
+                >
+                    Back
+                </Button>
             </Box>
 
-            {errorMsg && <Alert severity="error" sx={{ mb: 3 }}>{errorMsg}</Alert>}
+            {errorMsg && <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>{errorMsg}</Alert>}
 
-            <Card sx={{ mb: 5, backgroundColor: '#f8f9fa' }}>
-                <CardContent>
-                    <Typography variant="h6" gutterBottom>Page Settings</Typography>
-                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
+            <Paper elevation={0} sx={{ p: 2.5, mb: 6, borderRadius: 3, border: '1px solid #edf2f7', backgroundColor: '#f8fafc' }}>
+                <Grid container spacing={3} sx={{ alignItems: 'center' }}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                         <TextField
-                            label="Title" fullWidth size="small" defaultValue={page.title}
+                            label="Page Title" fullWidth size="small" defaultValue={page.title}
                             onBlur={(e) => handleUpdatePageMeta({ title: String(e.target.value) })}
+                            sx={{ backgroundColor: 'white', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                         />
+                    </Grid>
+                    <Grid size={{ xs: 6, md: 3 }}>
                         <TextField
-                            label="Est. Minutes" type="number" size="small" sx={{ width: 150 }} defaultValue={page.estimatedMinutes}
+                            label="Est. Minutes" type="number" size="small" fullWidth defaultValue={page.estimatedMinutes}
                             onBlur={(e) => handleUpdatePageMeta({ estimatedMinutes: Number(e.target.value) })}
+                            sx={{ backgroundColor: 'white', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                         />
+                    </Grid>
+                    <Grid size={{ xs: 6, md: 3 }} sx={{ textAlign: 'right' }}>
                         <FormControlLabel
                             control={
                                 <Switch
@@ -154,127 +181,150 @@ export const PageEditor = () => {
                                 />
                             }
                             label="Published"
-                            sx={{ ml: 1 }}
                         />
-                    </Box>
-                </CardContent>
-            </Card>
+                    </Grid>
+                </Grid>
+            </Paper>
 
-            <Typography variant="h5" gutterBottom>Content</Typography>
+            <Stack spacing={3}>
+                <Typography variant="h6" sx={{ fontWeight: 700, px: 1 }}>Content Canvas</Typography>
 
-            {blocks.map((block) => (
-                <Card key={block.id} sx={{ mb: 2, borderLeft: '4px solid #1976d2' }}>
-                    <CardContent sx={{ position: 'relative' }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                            <Typography variant="caption" color="textSecondary" sx={{ fontWeight: 'bold' }}>
-                                {String(block.type).toUpperCase()} BLOCK
-                            </Typography>
-                            <Button size="small" color="error" onClick={() => handleDeleteBlock(Number(block.id))}>
-                                Delete
-                            </Button>
+                {blocks.map((block) => (
+                    <Paper
+                        key={block.id}
+                        elevation={0}
+                        sx={{
+                            p: 3,
+                            borderRadius: 3,
+                            border: '1px solid #edf2f7',
+                            position: 'relative',
+                            '&:hover': { borderColor: theme.palette.primary.light }
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                                {block.type === 'CODE' && <CodeRoundedIcon fontSize="small" color="primary" />}
+                                {block.type === 'LIST' && <ListRoundedIcon fontSize="small" color="primary" />}
+                                {block.type === 'PARAGRAPH' && <NotesRoundedIcon fontSize="small" color="primary" />}
+                                {block.type === 'IMAGE' && <ImageRoundedIcon fontSize="small" color="primary" />}
+                                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase' }}>
+                                    {block.type}
+                                </Typography>
+                            </Stack>
+                            <Tooltip title="Delete Block">
+                                <IconButton size="small" color="error" onClick={() => handleDeleteBlock(block.id)}>
+                                    <DeleteOutlineRoundedIcon fontSize="small" />
+                                </IconButton>
+                            </Tooltip>
                         </Box>
 
-                        {/* 7. Display logic adjusted to include LIST viewing */}
-                        {(String(block.type).toUpperCase() === 'PARAGRAPH' || (String(block.type).toUpperCase() === 'LIST' && block.content)) && (
-                            <Typography variant="body1" sx={{ mb: String(block.type).toUpperCase() === 'LIST' ? 1 : 0 }}>
-                                {block.content}
-                            </Typography>
+                        {block.type === 'PARAGRAPH' && (
+                            <Typography variant="body1" sx={{ color: 'text.primary', lineHeight: 1.7 }}>{block.content}</Typography>
                         )}
 
-                        {String(block.type).toUpperCase() === 'IMAGE' && <Box component="img" src={block.content} sx={{ maxWidth: '100%', borderRadius: 1 }} />}
+                        {block.type === 'IMAGE' && (
+                            <Box sx={{ textAlign: 'center' }}>
+                                <Box component="img" src={block.content} sx={{ maxWidth: '100%', borderRadius: 2, maxHeight: 400, border: '1px solid #eee' }} />
+                            </Box>
+                        )}
 
-                        {String(block.type).toUpperCase() === 'CODE' && (
-                            <Box sx={{ backgroundColor: '#2d2d2d', color: '#ccc', p: 2, borderRadius: 1, fontFamily: 'monospace' }}>
-                                <Typography variant="caption" sx={{ color: '#888', display: 'block', mb: 1 }}>
-                                    Language: {block.language || 'text'}
+                        {block.type === 'CODE' && (
+                            <Box sx={{ backgroundColor: '#1e293b', color: '#f8fafc', p: 2.5, borderRadius: 2, fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                                <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', mb: 1.5, borderBottom: '1px solid #334155', pb: 0.5 }}>
+                                    {block.language || 'Plain Text'}
                                 </Typography>
                                 <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{block.content}</pre>
                             </Box>
                         )}
 
-                        {String(block.type).toUpperCase() === 'LIST' && block.listItems && block.listItems.length > 0 && (
-                            <Box component="ul" sx={{ m: 0, pl: 3 }}>
-                                {block.listItems.map((item) => (
-                                    <Typography component="li" variant="body1" key={item.id || item.orderIndex}>
-                                        {item.text}
-                                    </Typography>
-                                ))}
+                        {block.type === 'LIST' && (
+                            <Box>
+                                {block.content && <Typography sx={{ mb: 1, fontWeight: 500 }}>{block.content}</Typography>}
+                                <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
+                                    {block.listItems?.map((item) => (
+                                        <Typography component="li" key={item.id || item.orderIndex} sx={{ mb: 0.5, color: 'text.primary' }}>
+                                            {item.text}
+                                        </Typography>
+                                    ))}
+                                </Box>
                             </Box>
                         )}
-                    </CardContent>
-                </Card>
-            ))}
+                    </Paper>
+                ))}
 
-            {!isAddingBlock ? (
-                <Button
-                    variant="outlined" fullWidth sx={{ mt: 2, py: 2, borderStyle: 'dashed' }}
-                    onClick={() => setIsAddingBlock(true)}
-                >
-                    + Add Content Block
-                </Button>
-            ) : (
-                <Card sx={{ mt: 3, border: '1px solid #1976d2' }}>
-                    <CardContent component="form" onSubmit={handleBlockSubmit(onAddBlock)}>
-                        <Typography variant="subtitle1" gutterBottom>New Content Block</Typography>
-
-                        <Grid container spacing={2} sx={{ mb: 2 }}>
-                            <Grid size={{ xs: 12, sm: 4 }}>
-                                <TextField select fullWidth label="Block Type" {...registerBlock('type')}>
-                                    <MenuItem value="PARAGRAPH">Paragraph</MenuItem>
-                                    <MenuItem value="LIST">Bulleted List</MenuItem> {/* 8. Added List Type to Dropdown */}
-                                    <MenuItem value="CODE">Code Snippet</MenuItem>
-                                    <MenuItem value="IMAGE">Image URL</MenuItem>
-                                </TextField>
-                            </Grid>
-                            {blockType === 'CODE' && (
-                                <Grid size={{ xs: 12, sm: 8 }}>
-                                    <TextField fullWidth label="Language (e.g. javascript, python)" {...registerBlock('language')} />
+                {!isAddingBlock ? (
+                    <Button
+                        variant="outlined" fullWidth
+                        sx={{ mt: 2, py: 3, borderStyle: 'dashed', borderRadius: 3, borderWidth: 2, textTransform: 'none', fontWeight: 600 }}
+                        startIcon={<AddRoundedIcon />}
+                        onClick={() => setIsAddingBlock(true)}
+                    >
+                        Insert New Content Block
+                    </Button>
+                ) : (
+                    <Paper sx={{ p: 4, borderRadius: 4, border: `2px solid ${theme.palette.primary.main}` }}>
+                        <Typography variant="h6" sx={{ mb: 3, fontWeight: 700 }}>New Block Details</Typography>
+                        <Box component="form" onSubmit={handleBlockSubmit(onAddBlock)}>
+                            <Grid container spacing={3} sx={{ mb: 3 }}>
+                                <Grid size={{ xs: 12, sm: 4 }}>
+                                    <TextField select fullWidth label="Block Type" {...registerBlock('type')} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}>
+                                        <MenuItem value="PARAGRAPH">Paragraph</MenuItem>
+                                        <MenuItem value="LIST">Bulleted List</MenuItem>
+                                        <MenuItem value="CODE">Code Snippet</MenuItem>
+                                        <MenuItem value="IMAGE">Image URL</MenuItem>
+                                    </TextField>
                                 </Grid>
-                            )}
-                        </Grid>
+                                {blockType === 'CODE' && (
+                                    <Grid size={{ xs: 12, sm: 8 }}>
+                                        <TextField fullWidth label="Language" {...registerBlock('language')} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                                    </Grid>
+                                )}
+                            </Grid>
 
-                        {/* 9. Conditionally render either a normal text area OR a dynamic list builder */}
-                        {blockType !== 'LIST' ? (
-                            <TextField
-                                fullWidth multiline rows={4} label="Content" variant="outlined"
-                                placeholder={blockType === 'IMAGE' ? "Paste image URL here..." : "Type your content..."}
-                                {...registerBlock('content', { required: true })}
-                                sx={{ mb: 2 }}
-                            />
-                        ) : (
-                            <Box sx={{ mb: 2, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
+                            {blockType !== 'LIST' ? (
                                 <TextField
-                                    fullWidth label="List Intro/Title (Optional)" variant="outlined" size="small"
-                                    placeholder="e.g. Here are the key takeaways:"
-                                    {...registerBlock('content')}
-                                    sx={{ mb: 3 }}
+                                    fullWidth multiline rows={4} label="Content" variant="outlined"
+                                    placeholder={blockType === 'IMAGE' ? "https://..." : "Type here..."}
+                                    {...registerBlock('content', { required: true })}
+                                    sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                 />
-                                <Typography variant="subtitle2" gutterBottom>List Items *</Typography>
-                                {listFields.map((field, index) => (
-                                    <Box key={field.id} sx={{ display: 'flex', gap: 1, mb: 1 }}>
-                                        <TextField
-                                            fullWidth size="small" placeholder={`Item ${index + 1}`}
-                                            {...registerBlock(`listItems.${index}.text` as const, { required: true })}
-                                        />
-                                        <Button color="error" onClick={() => removeListItem(index)}>X</Button>
-                                    </Box>
-                                ))}
-                                <Button
-                                    variant="text" size="small" sx={{ mt: 1 }}
-                                    onClick={() => appendListItem({ text: '', orderIndex: listFields.length })}
-                                >
-                                    + Add Item
+                            ) : (
+                                <Box sx={{ mb: 3, p: 3, backgroundColor: '#f8fafc', borderRadius: 3, border: '1px solid #edf2f7' }}>
+                                    <TextField
+                                        fullWidth label="List Context" variant="outlined" size="small"
+                                        {...registerBlock('content')}
+                                        sx={{ mb: 3, backgroundColor: 'white' }}
+                                    />
+                                    <Stack spacing={1}>
+                                        {listFields.map((field, index) => (
+                                            <Box key={field.id} sx={{ display: 'flex', gap: 1 }}>
+                                                <TextField
+                                                    fullWidth size="small" placeholder={`Item ${index + 1}`}
+                                                    {...registerBlock(`listItems.${index}.text` as const, { required: true })}
+                                                    sx={{ backgroundColor: 'white' }}
+                                                />
+                                                <IconButton color="error" onClick={() => removeListItem(index)}>
+                                                    <DeleteOutlineRoundedIcon />
+                                                </IconButton>
+                                            </Box>
+                                        ))}
+                                    </Stack>
+                                    <Button variant="text" startIcon={<AddRoundedIcon />} sx={{ mt: 2 }} onClick={() => appendListItem({ text: '', orderIndex: listFields.length })}>
+                                        Add Item
+                                    </Button>
+                                </Box>
+                            )}
+
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                                <Button onClick={() => setIsAddingBlock(false)}>Cancel</Button>
+                                <Button type="submit" variant="contained" disableElevation startIcon={<SaveRoundedIcon />} sx={{ borderRadius: 2, px: 3, fontWeight: 600 }}>
+                                    Save Block
                                 </Button>
                             </Box>
-                        )}
-
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                            <Button onClick={() => setIsAddingBlock(false)}>Cancel</Button>
-                            <Button type="submit" variant="contained" color="primary">Save Block</Button>
                         </Box>
-                    </CardContent>
-                </Card>
-            )}
+                    </Paper>
+                )}
+            </Stack>
         </Container>
     );
 };

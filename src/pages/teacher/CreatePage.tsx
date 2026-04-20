@@ -2,9 +2,13 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
-    Container, Typography, Box, Button, Card, CardContent,
-    TextField, Alert, Breadcrumbs, Link
+    Container, Typography, Box, Button, Paper,
+    TextField, Alert, Breadcrumbs, Link, Stack,
+    useTheme, useMediaQuery, Divider
 } from '@mui/material';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
 import { getOpenAPIDefinition } from '../../api/generated/endpoints';
 import type { PageCreate } from '../../api/generated/models';
 
@@ -19,6 +23,8 @@ interface PageCreateForm {
 export const CreatePage = () => {
     const { topicId } = useParams<{ topicId: string }>();
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<PageCreateForm>({
@@ -29,19 +35,17 @@ export const CreatePage = () => {
         if (!topicId) return;
         setErrorMsg(null);
         try {
-            // Map form to the exact PageCreate interface required by OpenAPI
             const payload: PageCreate = {
                 title: data.title,
                 estimatedMinutes: data.estimatedMinutes,
                 orderIndex: data.orderIndex
             };
 
-            // Cast topicId to Number to satisfy OpenAPI generated types
             const response = await api.topicsTopicIdPagesPost(topicId, payload);
+            // Navigate to edit to add the actual markdown/content
             navigate(`/teacher/pages/${response.data.id}/edit`);
 
         } catch (error: unknown) {
-            // Safely handle the error without using 'any'
             type ErrorWithResponse = { response?: { data?: { message?: string } } };
             const isApiError = (err: unknown): err is ErrorWithResponse =>
                 typeof err === 'object' && err !== null && 'response' in err;
@@ -55,48 +59,109 @@ export const CreatePage = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
-            <Breadcrumbs sx={{ mb: 4 }}>
-                <Link color="inherit" sx={{ cursor: 'pointer', textDecoration: 'none' }} onClick={() => navigate(`/teacher/topics/${topicId}`)}>
-                    Back to Topic
+        <Container maxWidth="md" sx={{ mt: { xs: 2, md: 4 }, mb: 8 }}>
+            {/* Consistent Breadcrumbs */}
+            <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} sx={{ mb: 3 }}>
+                <Link
+                    underline="hover"
+                    color="inherit"
+                    sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', fontSize: '0.875rem' }}
+                    onClick={() => navigate(`/teacher/topics/${topicId}`)}
+                >
+                    Topic Details
                 </Link>
-                <Typography color="text.primary">Create Page</Typography>
+                <Typography color="text.primary" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                    New Page
+                </Typography>
             </Breadcrumbs>
 
-            <Typography variant="h4" gutterBottom>Create New Page</Typography>
-            {errorMsg && <Alert severity="error" sx={{ mb: 3 }}>{errorMsg}</Alert>}
+            <Box sx={{ mb: 4 }}>
+                <Typography variant="h4" component="h1" sx={{ fontWeight: 800, mb: 1, letterSpacing: '-0.02em' }}>
+                    Create New Page
+                </Typography>
+                <Typography variant="body1" color="textSecondary">
+                    Set up the basic information. You'll add the page content in the next step.
+                </Typography>
+            </Box>
 
-            <Card>
-                <CardContent>
-                    <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+            {errorMsg && (
+                <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+                    {errorMsg}
+                </Alert>
+            )}
+
+            <Paper
+                elevation={0}
+                sx={{
+                    p: { xs: 3, md: 5 },
+                    borderRadius: 4,
+                    border: '1px solid #edf2f7',
+                    boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.02)'
+                }}
+            >
+                <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+                    <Stack spacing={3}>
                         <TextField
-                            fullWidth margin="normal" label="Page Title" variant="outlined"
+                            fullWidth
+                            label="Page Title"
+                            placeholder="e.g. Introduction to React Hooks"
                             {...register('title', { required: 'Title is required' })}
                             error={!!errors.title}
                             helperText={errors.title?.message}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                         />
-                        <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
-                            <TextField
-                                fullWidth margin="normal" type="number" label="Estimated Minutes"
-                                {...register('estimatedMinutes', { valueAsNumber: true, min: 1 })}
-                            />
-                            <TextField
-                                fullWidth margin="normal" type="number" label="Order Index (Sorting)"
-                                {...register('orderIndex', { valueAsNumber: true })}
-                            />
-                        </Box>
 
-                        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                            <Button onClick={() => navigate(`/teacher/topics/${topicId}`)} disabled={isSubmitting}>
-                                Cancel
+                        <Stack direction={isMobile ? 'column' : 'row'} spacing={2}>
+                            <TextField
+                                fullWidth
+                                type="number"
+                                label="Estimated Minutes"
+                                {...register('estimatedMinutes', { valueAsNumber: true, min: 1 })}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                            />
+                            <TextField
+                                fullWidth
+                                type="number"
+                                label="Order Index (Sorting)"
+                                {...register('orderIndex', { valueAsNumber: true })}
+                                helperText="Lower numbers appear first"
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                            />
+                        </Stack>
+
+                        <Divider sx={{ my: 1 }} />
+
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+                            <Button
+                                startIcon={<ArrowBackRoundedIcon />}
+                                onClick={() => navigate(`/teacher/topics/${topicId}`)}
+                                disabled={isSubmitting}
+                                sx={{ textTransform: 'none', fontWeight: 600, color: 'text.secondary' }}
+                            >
+                                Back to Topic
                             </Button>
-                            <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>
+
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                color="primary"
+                                disabled={isSubmitting}
+                                disableElevation
+                                startIcon={<SaveRoundedIcon />}
+                                sx={{
+                                    borderRadius: 2,
+                                    px: 4,
+                                    py: 1.2,
+                                    textTransform: 'none',
+                                    fontWeight: 600
+                                }}
+                            >
                                 {isSubmitting ? 'Creating...' : 'Create & Add Content'}
                             </Button>
                         </Box>
-                    </Box>
-                </CardContent>
-            </Card>
+                    </Stack>
+                </Box>
+            </Paper>
         </Container>
     );
 };
