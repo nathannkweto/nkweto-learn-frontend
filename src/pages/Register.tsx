@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
-    Box, Button, TextField, Typography, Container, Paper, Link, Alert, MenuItem
+    Box, Button, TextField, Typography, Container, Paper, Link, Alert
 } from '@mui/material';
 import { useAuth } from '../hooks/useAuth';
 import { getOpenAPIDefinition } from '../api/generated/endpoints';
@@ -16,9 +16,6 @@ export const Register = () => {
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterRequest>({
-        defaultValues: {
-            role: 'STUDENT' // Default to student
-        }
     });
 
     const onSubmit = async (data: RegisterRequest) => {
@@ -87,17 +84,6 @@ export const Register = () => {
                             error={!!errors.password}
                             helperText={errors.password?.message}
                         />
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            select
-                            label="Role"
-                            {...register('role')}
-                        >
-                            <MenuItem value="student">Student</MenuItem>
-                            <MenuItem value="teacher">Teacher</MenuItem>
-                        </TextField>
 
                         <Button
                             type="submit"
