@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     Box, Typography, Paper, Button, Divider, Container,
-    CircularProgress, Alert, Breadcrumbs, Link
+    CircularProgress, Alert, Breadcrumbs, Link, Stack
 } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { getOpenAPIDefinition } from '../../api/generated/endpoints';
 import type { PageDetail } from '../../api/generated/models';
 
@@ -45,45 +48,106 @@ export const StudentPageView = () => {
         void fetchPage();
     }, [pageId]);
 
-    if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
-    if (!page) return <Container sx={{ mt: 4 }}><Alert severity="error">Lesson content not found.</Alert></Container>;
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
+
+    if (!page) {
+        return (
+            <Container sx={{ mt: 4 }}>
+                <Alert severity="error" variant="outlined" sx={{ borderRadius: 3 }}>
+                    Lesson content not found.
+                </Alert>
+            </Container>
+        );
+    }
 
     const blocks = (page.blocks || []) as unknown as ContentBlock[];
 
     return (
-        <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
-            <Breadcrumbs sx={{ mb: 4 }}>
-                <Link color="inherit" sx={{ cursor: 'pointer', textDecoration: 'none' }} onClick={() => navigate('/student/dashboard')}>
-                    Dashboard
-                </Link>
-                {topicId && (
-                    <Link color="inherit" sx={{ cursor: 'pointer', textDecoration: 'none' }} onClick={() => navigate(`/student/topics/${topicId}`)}>
-                        Topic Overview
-                    </Link>
-                )}
-                {/* Fix: Safely cast title to String */}
-                <Typography color="text.primary">{String(page.title)}</Typography>
-            </Breadcrumbs>
+        <Box sx={{ backgroundColor: '#ffffff', minHeight: '100vh', pb: 10 }}>
+            {/* Top Navigation Bar */}
+            <Box sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 2, mb: 4, backgroundColor: '#fcfcfc' }}>
+                <Container maxWidth="md">
+                    {/* Fix: Moved justifyContent and alignItems into sx */}
+                    <Stack
+                        direction="row"
+                        sx={{ justifyContent: 'space-between', alignItems: 'center' }}
+                    >
+                        <Breadcrumbs separator="/" aria-label="breadcrumb">
+                            <Link
+                                color="inherit"
+                                sx={{ cursor: 'pointer', textDecoration: 'none', '&:hover': { color: 'primary.main' }, fontSize: '0.875rem' }}
+                                onClick={() => navigate('/student/dashboard')}
+                            >
+                                Dashboard
+                            </Link>
+                            {topicId && (
+                                <Link
+                                    color="inherit"
+                                    sx={{ cursor: 'pointer', textDecoration: 'none', '&:hover': { color: 'primary.main' }, fontSize: '0.875rem' }}
+                                    onClick={() => navigate(`/student/topics/${topicId}`)}
+                                >
+                                    Topic
+                                </Link>
+                            )}
+                            <Typography color="text.primary" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                                {String(page.title)}
+                            </Typography>
+                        </Breadcrumbs>
+                        <Button
+                            startIcon={<ArrowBackIcon />}
+                            size="small"
+                            onClick={() => navigate(-1)}
+                            sx={{ textTransform: 'none', fontWeight: 600 }}
+                        >
+                            Back
+                        </Button>
+                    </Stack>
+                </Container>
+            </Box>
 
-            <Paper sx={{ p: { xs: 3, md: 5 }, mb: 4, borderRadius: 2 }}>
-                {/* Fix: Safely cast title to String */}
-                <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    {String(page.title)}
-                </Typography>
-                {/* Fix: Safely cast estimatedMinutes to String */}
-                <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-                    Estimated time: {String(page.estimatedMinutes)} minutes
-                </Typography>
+            <Container maxWidth="md">
+                <Box sx={{ mb: 6 }}>
+                    <Typography variant="h3" component="h1" sx={{ fontWeight: 800, mb: 2, color: '#1e293b' }}>
+                        {String(page.title)}
+                    </Typography>
 
-                <Divider sx={{ my: 4 }} />
+                    {/* Fix: Moved alignItems into sx */}
+                    <Stack
+                        direction="row"
+                        spacing={2}
+                        sx={{ alignItems: 'center', color: 'text.secondary' }}
+                    >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <AccessTimeIcon sx={{ fontSize: 20 }} />
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                {String(page.estimatedMinutes)} minute read
+                            </Typography>
+                        </Box>
+                    </Stack>
+                </Box>
 
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {blocks.map((block) => {
                         const type = String(block.type).toUpperCase();
 
                         if (type === 'PARAGRAPH') {
                             return (
-                                <Typography key={block.id} variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8 }}>
+                                <Typography
+                                    key={block.id}
+                                    variant="body1"
+                                    sx={{
+                                        fontSize: '1.15rem',
+                                        lineHeight: 1.8,
+                                        color: '#334155',
+                                        fontWeight: 400
+                                    }}
+                                >
                                     {block.content}
                                 </Typography>
                             );
@@ -91,38 +155,71 @@ export const StudentPageView = () => {
 
                         if (type === 'IMAGE') {
                             return (
-                                <Box key={block.id} sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-                                    <Box component="img" src={block.content} alt="Lesson illustration" sx={{ maxWidth: '100%', borderRadius: 2, boxShadow: 1 }} />
+                                <Box key={block.id} sx={{ my: 2 }}>
+                                    <Box
+                                        component="img"
+                                        src={block.content}
+                                        alt="Lesson illustration"
+                                        sx={{
+                                            maxWidth: '100%',
+                                            height: 'auto',
+                                            borderRadius: 3,
+                                            boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.1)'
+                                        }}
+                                    />
                                 </Box>
                             );
                         }
 
                         if (type === 'CODE') {
                             return (
-                                <Box key={block.id} sx={{ backgroundColor: '#1e1e1e', color: '#d4d4d4', p: 3, borderRadius: 2, overflowX: 'auto' }}>
+                                <Paper
+                                    key={block.id}
+                                    elevation={0}
+                                    sx={{
+                                        backgroundColor: '#0f172a',
+                                        color: '#e2e8f0',
+                                        p: 3,
+                                        borderRadius: 3,
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}
+                                >
                                     {block.language && (
-                                        <Typography variant="caption" sx={{ color: '#858585', mb: 1, display: 'block', textTransform: 'uppercase' }}>
-                                            {block.language}
-                                        </Typography>
+                                        <Box sx={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            right: 0,
+                                            px: 2,
+                                            py: 0.5,
+                                            backgroundColor: 'rgba(255,255,255,0.1)',
+                                            borderRadius: '0 0 0 8px'
+                                        }}>
+                                            <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>
+                                                {block.language}
+                                            </Typography>
+                                        </Box>
                                     )}
-                                    <pre style={{ margin: 0, fontFamily: 'Consolas, Monaco, monospace', fontSize: '0.95rem' }}>
-                                        {block.content}
+                                    <pre style={{ margin: 0, fontFamily: '"Fira Code", "Cascadia Code", monospace', fontSize: '0.95rem', lineHeight: 1.5 }}>
+                                        <code>{block.content}</code>
                                     </pre>
-                                </Box>
+                                </Paper>
                             );
                         }
 
                         if (type === 'LIST') {
                             return (
-                                <Box key={block.id} sx={{ pl: 2 }}>
+                                <Box key={block.id} sx={{ pl: 1 }}>
                                     {block.content && (
-                                        <Typography variant="body1" sx={{ fontSize: '1.1rem', mb: 1 }}>
+                                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#1e293b' }}>
                                             {block.content}
                                         </Typography>
                                     )}
-                                    <Box component="ul" sx={{ mt: 0, fontSize: '1.1rem', lineHeight: 1.8 }}>
+                                    <Box component="ul" sx={{ mt: 0, pl: 3 }}>
                                         {block.listItems?.map((item) => (
-                                            <li key={item.id}>{item.text}</li>
+                                            <Box component="li" key={item.id} sx={{ mb: 1.5, color: '#334155', fontSize: '1.1rem' }}>
+                                                {item.text}
+                                            </Box>
                                         ))}
                                     </Box>
                                 </Box>
@@ -132,13 +229,29 @@ export const StudentPageView = () => {
                         return null;
                     })}
                 </Box>
-            </Paper>
 
-            <Box sx={{ display: 'flex', justifyContent: 'flex-start', mt: 4 }}>
-                <Button variant="outlined" onClick={() => navigate(-1)}>
-                    Back
-                </Button>
-            </Box>
-        </Container>
+                <Divider sx={{ my: 8 }} />
+
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <Button
+                        variant="contained"
+                        size="large"
+                        startIcon={<CheckCircleIcon />}
+                        onClick={() => navigate(`/student/topics/${topicId}`)}
+                        sx={{
+                            px: 6,
+                            py: 1.5,
+                            borderRadius: 10,
+                            textTransform: 'none',
+                            fontSize: '1.1rem',
+                            fontWeight: 700,
+                            boxShadow: '0px 8px 20px rgba(25, 118, 210, 0.25)'
+                        }}
+                    >
+                        Mark as Complete
+                    </Button>
+                </Box>
+            </Container>
+        </Box>
     );
 };

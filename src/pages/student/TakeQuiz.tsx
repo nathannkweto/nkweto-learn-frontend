@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import {
     Container, Typography, Box, Button, Card, CardContent,
-    CircularProgress, Alert, Radio, RadioGroup, FormControlLabel, FormControl, TextField
+    CircularProgress, Alert, Radio, RadioGroup, FormControlLabel,
+    FormControl, TextField, Paper, Stack, Divider
 } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
+import QuizIcon from '@mui/icons-material/Quiz';
 import { getOpenAPIDefinition } from '../../api/generated/endpoints';
 import type { QuizStudentView, SubmissionCreate } from '../../api/generated/models';
 
 const api = getOpenAPIDefinition();
 
-// We create a custom map type for React Hook Form to handle dynamic questions easily
 type FormValues = {
     [questionId: string]: {
         selected_option_id?: string;
@@ -25,30 +27,27 @@ export const TakeQuiz = () => {
     const [loading, setLoading] = useState(true);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
-    const { register, handleSubmit, formState: { isSubmitting } } = useForm<FormValues>();
+    const { register, handleSubmit, control, formState: { isSubmitting } } = useForm<FormValues>();
 
     useEffect(() => {
         const fetchQuiz = async () => {
             if (!quizId) return;
             try {
-                // Notice we are using the Student View endpoint here!
                 const response = await api.quizzesQuizIdGet(quizId);
                 setQuiz(response.data);
             } catch (err) {
-                // Fix 1: Removed ': any'
                 console.error(err);
             } finally {
                 setLoading(false);
             }
         };
-        fetchQuiz();
+        void fetchQuiz();
     }, [quizId]);
 
     const onSubmit = async (data: FormValues) => {
         setSubmitError(null);
         if (!quizId) return;
 
-        // Transform our flat form data into the specific array format the backend wants
         const answersArray = Object.entries(data).map(([qId, response]) => ({
             question_id: qId,
             selected_option_id: response.selected_option_id || undefined,
@@ -62,78 +61,207 @@ export const TakeQuiz = () => {
 
         try {
             await api.submissionsPost(payload);
-            // If successful, take them back to the dashboard (or to a "Results" page later!)
             navigate('/student/dashboard');
         } catch (err) {
-            // Fix 1: Safely handle error without ': any'
             const axiosError = err as { response?: { data?: { message?: string } } };
-            console.error('Submission failed', err);
             setSubmitError(axiosError.response?.data?.message || 'Failed to submit quiz.');
         }
     };
 
-    // Fix 3: Moved display, justifyContent, and mt into the sx prop
-    if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                <CircularProgress thickness={5} />
+            </Box>
+        );
+    }
 
-    // Fix 3: Moved mt into the sx prop
-    if (!quiz) return <Container sx={{ mt: 4 }}><Alert severity="error">Quiz not found.</Alert></Container>;
+    if (!quiz) {
+        return (
+            <Container sx={{ mt: 4 }}>
+                <Alert severity="error" variant="filled" sx={{ borderRadius: 3 }}>Quiz not found.</Alert>
+            </Container>
+        );
+    }
 
     return (
-        <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
-            {/* Fix 2: Cast quiz.title to string */}
-            <Typography variant="h4" gutterBottom>{String(quiz.title)}</Typography>
-            {submitError && <Alert severity="error" sx={{ mb: 3 }}>{submitError}</Alert>}
-
-            <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-                {quiz.questions?.map((question, index) => (
-                    <Card key={question.id} sx={{ mb: 3 }}>
-                        <CardContent>
-                            {/* Fix 2 & 3: Cast question.text to string and moved mb into sx */}
-                            <Typography variant="h6" sx={{ mb: 2 }}>
-                                {index + 1}. {String(question.text)}
+        <Box sx={{ backgroundColor: '#f1f5f9', minHeight: '100vh', pb: 10 }}>
+            <Paper
+                elevation={0}
+                sx={{
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 10,
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
+                    py: 2,
+                    mb: 4
+                }}
+            >
+                <Container maxWidth="md">
+                    {/* FIX: Moved layout props to sx to resolve TS2769 */}
+                    <Stack
+                        direction="row"
+                        sx={{ justifyContent: 'space-between', alignItems: 'center' }}
+                    >
+                        <Stack
+                            direction="row"
+                            spacing={1.5}
+                            sx={{ alignItems: 'center' }}
+                        >
+                            <QuizIcon color="primary" />
+                            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                                {String(quiz.title)}
                             </Typography>
+                        </Stack>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+                            {quiz.questions?.length} Questions
+                        </Typography>
+                    </Stack>
+                </Container>
+            </Paper>
 
-                            {/* Multiple Choice & True/False */}
-                            {(question.type === 'multiple_choice' || question.type === 'true_false') && (
-                                <FormControl component="fieldset" fullWidth>
-                                    {/* We use standard HTML radio logic hooked into React Hook Form to bypass complex MUI Controller setups */}
-                                    <RadioGroup>
-                                        {question.options?.map((option) => (
-                                            <FormControlLabel
-                                                key={option.id}
-                                                value={option.id}
-                                                control={<Radio {...register(`${question.id}.selected_option_id`)} required />}
-                                                label={String(option.text)} // Fix 2: Cast option text as well just in case
-                                            />
-                                        ))}
-                                    </RadioGroup>
-                                </FormControl>
-                            )}
+            <Container maxWidth="md">
+                {submitError && (
+                    <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+                        {submitError}
+                    </Alert>
+                )}
 
-                            {/* Short Answer */}
-                            {question.type === 'short_answer' && (
-                                <TextField
-                                    fullWidth
-                                    multiline
-                                    rows={3}
-                                    placeholder="Type your answer here..."
-                                    {...register(`${question.id}.text_response`, { required: true })}
-                                />
-                            )}
-                        </CardContent>
-                    </Card>
-                ))}
+                <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+                    {quiz.questions?.map((question, index) => (
+                        <Card
+                            key={question.id}
+                            elevation={0}
+                            sx={{
+                                mb: 3,
+                                borderRadius: 4,
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                overflow: 'visible'
+                            }}
+                        >
+                            <CardContent sx={{ p: { xs: 3, md: 4 } }}>
+                                <Typography
+                                    variant="subtitle2"
+                                    sx={{
+                                        color: 'primary.main',
+                                        fontWeight: 700,
+                                        textTransform: 'uppercase',
+                                        mb: 1,
+                                        letterSpacing: '0.05em'
+                                    }}
+                                >
+                                    Question {index + 1}
+                                </Typography>
 
-                {/* Fix 3: Moved display, justifyContent, and gap into sx */}
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                    <Button onClick={() => navigate(-1)} disabled={isSubmitting}>
-                        Cancel
-                    </Button>
-                    <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>
-                        {isSubmitting ? 'Submitting...' : 'Submit Quiz'}
-                    </Button>
+                                <Typography variant="h5" sx={{ mb: 4, fontWeight: 600, color: '#1e293b' }}>
+                                    {String(question.text)}
+                                </Typography>
+
+                                <Divider sx={{ mb: 4, opacity: 0.6 }} />
+
+                                {(question.type === 'multiple_choice' || question.type === 'true_false') && (
+                                    <FormControl component="fieldset" fullWidth>
+                                        {/* Use Controller for RadioGroup for better react-hook-form integration */}
+                                        <Controller
+                                            name={`${question.id}.selected_option_id`}
+                                            control={control}
+                                            rules={{ required: true }}
+                                            render={({ field }) => (
+                                                <RadioGroup {...field}>
+                                                    <Stack spacing={1.5}>
+                                                        {question.options?.map((option) => (
+                                                            <Paper
+                                                                key={option.id}
+                                                                elevation={0}
+                                                                sx={{
+                                                                    border: '1px solid',
+                                                                    borderColor: field.value === option.id ? 'primary.main' : 'divider',
+                                                                    borderRadius: 2,
+                                                                    transition: '0.2s',
+                                                                    backgroundColor: field.value === option.id ? 'rgba(25, 118, 210, 0.04)' : 'transparent',
+                                                                    '&:hover': {
+                                                                        borderColor: 'primary.main',
+                                                                        backgroundColor: 'rgba(25, 118, 210, 0.02)'
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <FormControlLabel
+                                                                    value={option.id}
+                                                                    control={<Radio />}
+                                                                    label={String(option.text)}
+                                                                    sx={{
+                                                                        width: '100%',
+                                                                        m: 0,
+                                                                        px: 2,
+                                                                        py: 1,
+                                                                        '& .MuiTypography-root': {
+                                                                            fontSize: '1rem',
+                                                                            fontWeight: 500,
+                                                                            width: '100%'
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            </Paper>
+                                                        ))}
+                                                    </Stack>
+                                                </RadioGroup>
+                                            )}
+                                        />
+                                    </FormControl>
+                                )}
+
+                                {question.type === 'short_answer' && (
+                                    <TextField
+                                        fullWidth
+                                        multiline
+                                        rows={4}
+                                        variant="outlined"
+                                        placeholder="Type your explanation here..."
+                                        {...register(`${question.id}.text_response`, { required: true })}
+                                        slotProps={{
+                                            input: {
+                                                sx: {
+                                                    fontSize: '1.1rem', borderRadius: 3
+                                                }
+                                            }
+                                    }}
+                                    />
+                                )}
+                            </CardContent>
+                        </Card>
+                    ))}
+
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 6 }}>
+                        <Button
+                            onClick={() => navigate(-1)}
+                            disabled={isSubmitting}
+                            sx={{ textTransform: 'none', fontWeight: 600, color: 'text.secondary' }}
+                        >
+                            Cancel and Exit
+                        </Button>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            disabled={isSubmitting}
+                            endIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
+                            sx={{
+                                px: 5,
+                                py: 1.5,
+                                borderRadius: 3,
+                                textTransform: 'none',
+                                fontSize: '1rem',
+                                fontWeight: 700,
+                                boxShadow: '0px 4px 14px rgba(25, 118, 210, 0.3)'
+                            }}
+                        >
+                            {isSubmitting ? 'Submitting...' : 'Submit Answers'}
+                        </Button>
+                    </Box>
                 </Box>
-            </Box>
-        </Container>
+            </Container>
+        </Box>
     );
 };
