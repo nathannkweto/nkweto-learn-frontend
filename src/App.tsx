@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -25,7 +25,7 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <AuthProvider>
-          <BrowserRouter>
+          <HashRouter>
             <Routes>
               {/* Public Routes */}
               <Route path="/login" element={<Login />} />
@@ -48,7 +48,7 @@ function App() {
               {/* Fallback Route */}
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
-          </BrowserRouter>
+          </HashRouter>
         </AuthProvider>
       </ThemeProvider>
   );
