@@ -35,10 +35,22 @@ export const CreatePage = () => {
                 estimatedMinutes: data.estimatedMinutes,
                 orderIndex: data.orderIndex
             };
+
+            // Cast topicId to Number to satisfy OpenAPI generated types
             const response = await api.topicsTopicIdPagesPost(topicId, payload);
             navigate(`/teacher/pages/${response.data.id}/edit`);
-        } catch (error: any) {
-            setErrorMsg(error?.response?.data?.message || 'Failed to create page.');
+
+        } catch (error: unknown) {
+            // Safely handle the error without using 'any'
+            type ErrorWithResponse = { response?: { data?: { message?: string } } };
+            const isApiError = (err: unknown): err is ErrorWithResponse =>
+                typeof err === 'object' && err !== null && 'response' in err;
+
+            if (isApiError(error)) {
+                setErrorMsg(error.response?.data?.message || 'Failed to create page.');
+            } else {
+                setErrorMsg('An unexpected error occurred while creating the page.');
+            }
         }
     };
 
