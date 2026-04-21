@@ -31,7 +31,7 @@ function App() {
                 <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
                 <Route path="/teacher/topics/:topicId" element={<TopicDetails />} />
                 <Route path="/teacher/topics/:topicId/create-quiz" element={<QuizBuilder />} />
-                <Route path="/teacher/quizzes/${quiz.id}/submissions" element={<QuizSubmissions />} />
+                <Route path="/teacher/quizzes/quizId/submissions" element={<QuizSubmissions />} />
                 <Route path="/teacher/submissions/:submissionId" element={<ReviewResponse />} />
                 <Route path="/teacher/topics/:topicId/pages/create" element={<CreatePage />} />
                 <Route path="/teacher/pages/:pageId/edit" element={<PageEditor />} />
