@@ -77,7 +77,8 @@ export const StudentDashboard = () => {
                                     }
                                 }}
                             >
-                                <Box sx={{ flex: 1, pr: 2 }}>
+                                {/* FIX 1: Added minWidth: 0 here */}
+                                <Box sx={{ flex: 1, pr: 2, minWidth: 0 }}>
                                     {/* Fix: Moved 'alignItems' into 'sx' to satisfy TS overload */}
                                     <Stack
                                         direction="row"
@@ -108,6 +109,8 @@ export const StudentDashboard = () => {
                                     onClick={() => navigate(`/student/topics/${topic.id}`)}
                                     endIcon={<ChevronRightIcon />}
                                     sx={{
+                                        // FIX 2: Added flexShrink: 0 here
+                                        flexShrink: 0,
                                         borderRadius: 2,
                                         textTransform: 'none',
                                         fontWeight: 600,
