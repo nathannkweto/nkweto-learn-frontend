@@ -186,18 +186,11 @@ export const StudentPageView = () => {
                                     }}
                                 >
                                     {block.language && (
-                                        <Box sx={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            right: 0,
-                                            px: 2,
-                                            py: 0.5,
-                                            backgroundColor: 'rgba(255,255,255,0.1)',
-                                            borderRadius: '0 0 0 8px'
-                                        }}>
-                                            <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>
-                                                {block.language}
+                                        <Box sx={{ backgroundColor: '#1e293b', color: '#f8fafc', p: 2.5, borderRadius: 2, fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                                            <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', mb: 1.5, borderBottom: '1px solid #334155', pb: 0.5 }}>
+                                                {block.language || 'Plain Text'}
                                             </Typography>
+                                            <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{block.content}</pre>
                                         </Box>
                                     )}
                                     <pre style={{ margin: 0, fontFamily: '"Fira Code", "Cascadia Code", monospace', fontSize: '0.95rem', lineHeight: 1.5 }}>
