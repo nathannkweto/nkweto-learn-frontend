@@ -190,7 +190,7 @@ export const TopicDetails = () => {
                                     cursor: 'pointer',
                                     '&:hover': { backgroundColor: '#f8fafc', borderColor: theme.palette.secondary.light }
                                 }}
-                                onClick={() => navigate(`/teacher/topics/${topic.id}/quizzes/${quiz.id}`)}
+                                onClick={() => navigate(`/teacher/quizzes/${quiz.id}/submissions`)}
                             >
                                 <Box sx={{
                                     width: 40, height: 40, borderRadius: 2, backgroundColor: '#f5f3ff',

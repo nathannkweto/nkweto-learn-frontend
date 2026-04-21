@@ -13,6 +13,8 @@ import { TakeQuiz } from './pages/student/TakeQuiz';
 import { PageEditor } from "./pages/teacher/PageEditor.tsx";
 import { CreatePage } from "./pages/teacher/CreatePage.tsx";
 import {StudentPageView} from "./pages/student/StudentPageView.tsx";
+import {ReviewResponse} from "./pages/teacher/ReviewResponse.tsx";
+import {QuizSubmissions} from "./pages/teacher/QuizSubmissions.tsx";
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
                 <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
                 <Route path="/teacher/topics/:topicId" element={<TopicDetails />} />
                 <Route path="/teacher/topics/:topicId/create-quiz" element={<QuizBuilder />} />
+                <Route path="/teacher/topics/:topicId/quizzes/:quizId/submissions" element={<QuizSubmissions />} />
+                <Route path="/teacher/submissions/:submissionId" element={<ReviewResponse />} />
                 <Route path="/teacher/topics/:topicId/pages/create" element={<CreatePage />} />
                 <Route path="/teacher/pages/:pageId/edit" element={<PageEditor />} />
               </Route>

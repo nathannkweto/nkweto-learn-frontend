@@ -8,6 +8,7 @@ import {
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import QuizIcon from '@mui/icons-material/Quiz';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import { getOpenAPIDefinition } from '../../api/generated/endpoints';
 import type { QuizStudentView, SubmissionCreate } from '../../api/generated/models';
 
@@ -23,25 +24,36 @@ type FormValues = {
 export const TakeQuiz = () => {
     const { quizId } = useParams<{ quizId: string }>();
     const navigate = useNavigate();
+
     const [quiz, setQuiz] = useState<QuizStudentView | null>(null);
     const [loading, setLoading] = useState(true);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [existingSubmissionId, setExistingSubmissionId] = useState<string | null>(null);
 
     const { register, handleSubmit, control, formState: { isSubmitting } } = useForm<FormValues>();
 
     useEffect(() => {
-        const fetchQuiz = async () => {
+        const fetchQuizAndStatus = async () => {
             if (!quizId) return;
             try {
-                const response = await api.quizzesQuizIdGet(quizId);
-                setQuiz(response.data);
+                // 1. Check if the user has already submitted this quiz
+                const subResponse = await api.submissionsGet({ quizId });
+
+                if (subResponse.data && subResponse.data.length > 0) {
+                    setExistingSubmissionId(subResponse.data[0].id);
+                    return; // Skip loading the quiz form if already submitted
+                }
+
+                // 2. If not submitted, fetch the quiz details
+                const quizResponse = await api.quizzesQuizIdGet(quizId);
+                setQuiz(quizResponse.data);
             } catch (err) {
                 console.error(err);
             } finally {
                 setLoading(false);
             }
         };
-        void fetchQuiz();
+        void fetchQuizAndStatus();
     }, [quizId]);
 
     const onSubmit = async (data: FormValues) => {
@@ -63,8 +75,13 @@ export const TakeQuiz = () => {
             await api.submissionsPost(payload);
             navigate('/student/dashboard');
         } catch (err) {
-            const axiosError = err as { response?: { data?: { message?: string } } };
-            setSubmitError(axiosError.response?.data?.message || 'Failed to submit quiz.');
+            const axiosError = err as { response?: { data?: { message?: string }, status?: number } };
+            // Catching backend 409 Conflict if they bypassed UI check
+            if (axiosError.response?.status === 409) {
+                setSubmitError("You have already submitted this quiz.");
+            } else {
+                setSubmitError(axiosError.response?.data?.message || 'Failed to submit quiz.');
+            }
         }
     };
 
@@ -76,6 +93,31 @@ export const TakeQuiz = () => {
         );
     }
 
+    // ALREADY SUBMITTED VIEW
+    if (existingSubmissionId) {
+        return (
+            <Container maxWidth="sm" sx={{ mt: 8 }}>
+                <Paper elevation={0} sx={{ p: 5, textAlign: 'center', borderRadius: 3, border: '1px solid #edf2f7' }}>
+                    <CheckCircleRoundedIcon color="success" sx={{ fontSize: 60, mb: 2 }} />
+                    <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>
+                        Quiz Already Completed
+                    </Typography>
+                    <Typography color="text.secondary" sx={{ mb: 4 }}>
+                        You have already submitted your answers for this assessment. Multiple attempts are not permitted.
+                    </Typography>
+                    <Button
+                        variant="contained"
+                        disableElevation
+                        onClick={() => navigate(`/student/submissions/${existingSubmissionId}`)}
+                        sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, px: 4 }}
+                    >
+                        View My Results
+                    </Button>
+                </Paper>
+            </Container>
+        );
+    }
+
     if (!quiz) {
         return (
             <Container sx={{ mt: 4 }}>
@@ -84,6 +126,7 @@ export const TakeQuiz = () => {
         );
     }
 
+    // MAIN QUIZ FORM VIEW
     return (
         <Box sx={{ backgroundColor: '#f1f5f9', minHeight: '100vh', pb: 10 }}>
             <Paper
@@ -99,7 +142,6 @@ export const TakeQuiz = () => {
                 }}
             >
                 <Container maxWidth="md">
-                    {/* FIX: Moved layout props to sx to resolve TS2769 */}
                     <Stack
                         direction="row"
                         sx={{ justifyContent: 'space-between', alignItems: 'center' }}
@@ -163,7 +205,6 @@ export const TakeQuiz = () => {
 
                                 {(question.type === 'multiple_choice' || question.type === 'true_false') && (
                                     <FormControl component="fieldset" fullWidth>
-                                        {/* Use Controller for RadioGroup for better react-hook-form integration */}
                                         <Controller
                                             name={`${question.id}.selected_option_id`}
                                             control={control}
@@ -226,7 +267,7 @@ export const TakeQuiz = () => {
                                                     fontSize: '1.1rem', borderRadius: 3
                                                 }
                                             }
-                                    }}
+                                        }}
                                     />
                                 )}
                             </CardContent>
