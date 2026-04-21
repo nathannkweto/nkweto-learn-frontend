@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
     Container, Typography, Box, Button, Paper,
-    TextField, Alert, Breadcrumbs, Link, Stack,
-    useTheme, useMediaQuery, Divider
+    TextField, Alert, Breadcrumbs, Link, Stack, Divider
 } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
@@ -17,32 +16,47 @@ const api = getOpenAPIDefinition();
 interface PageCreateForm {
     title: string;
     estimatedMinutes: number;
-    orderIndex: number;
 }
 
 export const CreatePage = () => {
     const { topicId } = useParams<{ topicId: string }>();
     const navigate = useNavigate();
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [nextOrderIndex, setNextOrderIndex] = useState<number>(0);
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<PageCreateForm>({
-        defaultValues: { title: '', estimatedMinutes: 10, orderIndex: 0 }
+        defaultValues: { title: '', estimatedMinutes: 10 }
     });
+
+    useEffect(() => {
+        const fetchTopicData = async () => {
+            if (!topicId) return;
+            try {
+                // Fixed TS2345: Removed Number() wrapper to pass topicId as a string
+                const response = await api.topicsTopicIdGet(topicId);
+                const currentPagesCount = response.data.pages?.length || 0;
+                setNextOrderIndex(currentPagesCount);
+            } catch (err) {
+                console.error('Failed to fetch topic data for order index calculation:', err);
+            }
+        };
+
+        void fetchTopicData();
+    }, [topicId]);
 
     const onSubmit = async (data: PageCreateForm) => {
         if (!topicId) return;
         setErrorMsg(null);
+
         try {
             const payload: PageCreate = {
                 title: data.title,
                 estimatedMinutes: data.estimatedMinutes,
-                orderIndex: data.orderIndex
+                orderIndex: nextOrderIndex
             };
 
             const response = await api.topicsTopicIdPagesPost(topicId, payload);
-            // Navigate to edit to add the actual markdown/content
             navigate(`/teacher/pages/${response.data.id}/edit`);
 
         } catch (error: unknown) {
@@ -60,7 +74,6 @@ export const CreatePage = () => {
 
     return (
         <Container maxWidth="md" sx={{ mt: { xs: 2, md: 4 }, mb: 8 }}>
-            {/* Consistent Breadcrumbs */}
             <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} sx={{ mb: 3 }}>
                 <Link
                     underline="hover"
@@ -111,23 +124,13 @@ export const CreatePage = () => {
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                         />
 
-                        <Stack direction={isMobile ? 'column' : 'row'} spacing={2}>
-                            <TextField
-                                fullWidth
-                                type="number"
-                                label="Estimated Minutes"
-                                {...register('estimatedMinutes', { valueAsNumber: true, min: 1 })}
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                            />
-                            <TextField
-                                fullWidth
-                                type="number"
-                                label="Order Index (Sorting)"
-                                {...register('orderIndex', { valueAsNumber: true })}
-                                helperText="Lower numbers appear first"
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                            />
-                        </Stack>
+                        <TextField
+                            fullWidth
+                            type="number"
+                            label="Estimated Minutes"
+                            {...register('estimatedMinutes', { valueAsNumber: true, min: 1 })}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                        />
 
                         <Divider sx={{ my: 1 }} />
 

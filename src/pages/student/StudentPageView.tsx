@@ -9,7 +9,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { getOpenAPIDefinition } from '../../api/generated/endpoints';
-import type { PageDetail, Page } from '../../api/generated/models';
+import type { PageDetail, Page, TopicsTopicIdGet200Response } from '../../api/generated/models';
 
 const api = getOpenAPIDefinition();
 
@@ -34,6 +34,7 @@ export const StudentPageView = () => {
     const [page, setPage] = useState<PageDetail | null>(null);
     const [topicPages, setTopicPages] = useState<Page[]>([]);
     const [loading, setLoading] = useState(true);
+    const [topic, setTopic] = useState<TopicsTopicIdGet200Response | null>(null); // NEW
 
     useEffect(() => {
         const fetchData = async () => {
@@ -46,6 +47,7 @@ export const StudentPageView = () => {
 
                 setPage(pageRes.data);
                 setTopicPages(topicRes.data.pages || []);
+                setTopic(topicRes.data);
             } catch (err: unknown) {
                 console.error('Failed to fetch data:', err);
             } finally {
@@ -88,6 +90,8 @@ export const StudentPageView = () => {
     const prevPage = currentIndex > 0 ? topicPages[currentIndex - 1] : null;
     const nextPage = currentIndex >= 0 && currentIndex < topicPages.length - 1 ? topicPages[currentIndex + 1] : null;
 
+    const topicName = topic?.title ? String(topic.title) : 'Topic';
+
     return (
         <Box sx={{ backgroundColor: '#ffffff', minHeight: '100vh', pb: 10 }}>
             {/* Top Navigation Bar */}
@@ -111,7 +115,7 @@ export const StudentPageView = () => {
                                     sx={{ cursor: 'pointer', textDecoration: 'none', '&:hover': { color: 'primary.main' }, fontSize: '0.875rem' }}
                                     onClick={() => navigate(`/student/topics/${topicId}`)}
                                 >
-                                    Topic
+                                    {topicName}
                                 </Link>
                             )}
                             <Typography color="text.primary" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
