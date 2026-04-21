@@ -9,7 +9,6 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { getOpenAPIDefinition } from '../../api/generated/endpoints';
-// FIX 1: Import 'Page' from your generated models
 import type { PageDetail, Page } from '../../api/generated/models';
 
 const api = getOpenAPIDefinition();
@@ -33,7 +32,6 @@ export const StudentPageView = () => {
     const navigate = useNavigate();
 
     const [page, setPage] = useState<PageDetail | null>(null);
-    // FIX 2: Use the generated Page type instead of our mock interface
     const [topicPages, setTopicPages] = useState<Page[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -43,12 +41,10 @@ export const StudentPageView = () => {
             try {
                 const [pageRes, topicRes] = await Promise.all([
                     api.pagesPageIdGet(Number(pageId)),
-                    // FIX 3: Pass topicId as a string, removing the Number() wrapper
                     api.topicsTopicIdGet(topicId)
                 ]);
 
                 setPage(pageRes.data);
-                // topicRes.data.pages is now properly typed as Page[]
                 setTopicPages(topicRes.data.pages || []);
             } catch (err: unknown) {
                 console.error('Failed to fetch data:', err);
@@ -58,6 +54,15 @@ export const StudentPageView = () => {
         };
         void fetchData();
     }, [pageId, topicId]);
+
+    // NEW: Scroll to top whenever the pageId changes
+    useEffect(() => {
+        window.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: 'smooth' // Change to 'auto' if you prefer an instant jump instead of a smooth scroll
+        });
+    }, [pageId]);
 
     if (loading) {
         return (
@@ -79,7 +84,6 @@ export const StudentPageView = () => {
 
     const blocks = (page.blocks || []) as unknown as ContentBlock[];
 
-    // FIX 4: Safely check p.id in case it is undefined
     const currentIndex = topicPages.findIndex((p) => p.id !== undefined && p.id === Number(pageId));
     const prevPage = currentIndex > 0 ? topicPages[currentIndex - 1] : null;
     const nextPage = currentIndex >= 0 && currentIndex < topicPages.length - 1 ? topicPages[currentIndex + 1] : null;
