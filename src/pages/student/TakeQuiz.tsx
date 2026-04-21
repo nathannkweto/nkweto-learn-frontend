@@ -116,10 +116,10 @@ export const TakeQuiz = () => {
                     <Button
                         variant="contained"
                         disableElevation
-                        onClick={() => navigate(`/student/submissions/${existingSubmissionId}`)}
+                        onClick={() => navigate(-1)}
                         sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, px: 4 }}
                     >
-                        View My Results
+                        Back
                     </Button>
                 </Paper>
             </Container>

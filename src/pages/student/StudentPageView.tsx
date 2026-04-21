@@ -248,7 +248,7 @@ export const StudentPageView = () => {
                             boxShadow: '0px 8px 20px rgba(25, 118, 210, 0.25)'
                         }}
                     >
-                        Mark as Complete
+                        Complete
                     </Button>
                 </Box>
             </Container>
