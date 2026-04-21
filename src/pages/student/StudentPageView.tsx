@@ -5,10 +5,12 @@ import {
     CircularProgress, Alert, Breadcrumbs, Link, Stack
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { getOpenAPIDefinition } from '../../api/generated/endpoints';
-import type { PageDetail } from '../../api/generated/models';
+// FIX 1: Import 'Page' from your generated models
+import type { PageDetail, Page } from '../../api/generated/models';
 
 const api = getOpenAPIDefinition();
 
@@ -31,22 +33,31 @@ export const StudentPageView = () => {
     const navigate = useNavigate();
 
     const [page, setPage] = useState<PageDetail | null>(null);
+    // FIX 2: Use the generated Page type instead of our mock interface
+    const [topicPages, setTopicPages] = useState<Page[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchPage = async () => {
-            if (!pageId) return;
+        const fetchData = async () => {
+            if (!pageId || !topicId) return;
             try {
-                const response = await api.pagesPageIdGet(Number(pageId));
-                setPage(response.data);
+                const [pageRes, topicRes] = await Promise.all([
+                    api.pagesPageIdGet(Number(pageId)),
+                    // FIX 3: Pass topicId as a string, removing the Number() wrapper
+                    api.topicsTopicIdGet(topicId)
+                ]);
+
+                setPage(pageRes.data);
+                // topicRes.data.pages is now properly typed as Page[]
+                setTopicPages(topicRes.data.pages || []);
             } catch (err: unknown) {
-                console.error('Failed to fetch page content:', err);
+                console.error('Failed to fetch data:', err);
             } finally {
                 setLoading(false);
             }
         };
-        void fetchPage();
-    }, [pageId]);
+        void fetchData();
+    }, [pageId, topicId]);
 
     if (loading) {
         return (
@@ -68,12 +79,16 @@ export const StudentPageView = () => {
 
     const blocks = (page.blocks || []) as unknown as ContentBlock[];
 
+    // FIX 4: Safely check p.id in case it is undefined
+    const currentIndex = topicPages.findIndex((p) => p.id !== undefined && p.id === Number(pageId));
+    const prevPage = currentIndex > 0 ? topicPages[currentIndex - 1] : null;
+    const nextPage = currentIndex >= 0 && currentIndex < topicPages.length - 1 ? topicPages[currentIndex + 1] : null;
+
     return (
         <Box sx={{ backgroundColor: '#ffffff', minHeight: '100vh', pb: 10 }}>
             {/* Top Navigation Bar */}
             <Box sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 2, mb: 4, backgroundColor: '#fcfcfc' }}>
                 <Container maxWidth="md">
-                    {/* Fix: Moved justifyContent and alignItems into sx */}
                     <Stack
                         direction="row"
                         sx={{ justifyContent: 'space-between', alignItems: 'center' }}
@@ -117,7 +132,6 @@ export const StudentPageView = () => {
                         {String(page.title)}
                     </Typography>
 
-                    {/* Fix: Moved alignItems into sx */}
                     <Stack
                         direction="row"
                         spacing={2}
@@ -173,28 +187,29 @@ export const StudentPageView = () => {
 
                         if (type === 'CODE') {
                             return (
-                                    <Box
-                                        sx={{
-                                            backgroundColor: '#1e293b',
-                                            color: '#f8fafc',
-                                            p: 2.5,
-                                            borderRadius: 2,
-                                            fontFamily: 'monospace',
-                                            fontSize: '0.9rem'
+                                <Box
+                                    key={block.id}
+                                    sx={{
+                                        backgroundColor: '#1e293b',
+                                        color: '#f8fafc',
+                                        p: 2.5,
+                                        borderRadius: 2,
+                                        fontFamily: 'monospace',
+                                        fontSize: '0.9rem'
                                     }}>
-                                        <Typography
-                                            variant="caption"
-                                            sx={{
-                                                color: '#94a3b8',
-                                                display: 'block',
-                                                mb: 1.5,
-                                                borderBottom: '1px solid #334155',
-                                                pb: 0.5
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            color: '#94a3b8',
+                                            display: 'block',
+                                            mb: 1.5,
+                                            borderBottom: '1px solid #334155',
+                                            pb: 0.5
                                         }}>
-                                            {block.language || 'Plain Text'}
-                                        </Typography>
-                                        <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{block.content}</pre>
-                                    </Box>
+                                        {block.language || 'Plain Text'}
+                                    </Typography>
+                                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{block.content}</pre>
+                                </Box>
                             );
                         }
 
@@ -223,24 +238,64 @@ export const StudentPageView = () => {
 
                 <Divider sx={{ my: 8 }} />
 
-                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                {/* Bottom Navigation */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Button
-                        variant="contained"
+                        variant="outlined"
                         size="large"
-                        startIcon={<CheckCircleIcon />}
-                        onClick={() => navigate(`/student/topics/${topicId}`)}
+                        disabled={!prevPage}
+                        startIcon={<ArrowBackIcon />}
+                        onClick={() => prevPage?.id && navigate(`/student/topics/${topicId}/pages/${prevPage.id}`)}
                         sx={{
-                            px: 6,
+                            px: 4,
                             py: 1.5,
                             borderRadius: 10,
                             textTransform: 'none',
-                            fontSize: '1.1rem',
-                            fontWeight: 700,
-                            boxShadow: '0px 8px 20px rgba(25, 118, 210, 0.25)'
+                            fontSize: '1.05rem',
+                            fontWeight: 600
                         }}
                     >
-                        Complete
+                        Previous
                     </Button>
+
+                    {nextPage ? (
+                        <Button
+                            variant="contained"
+                            size="large"
+                            endIcon={<ArrowForwardIcon />}
+                            onClick={() => nextPage?.id && navigate(`/student/topics/${topicId}/pages/${nextPage.id}`)}
+                            sx={{
+                                px: 4,
+                                py: 1.5,
+                                borderRadius: 10,
+                                textTransform: 'none',
+                                fontSize: '1.05rem',
+                                fontWeight: 600,
+                                boxShadow: '0px 8px 20px rgba(25, 118, 210, 0.25)'
+                            }}
+                        >
+                            Next
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="contained"
+                            color="success"
+                            size="large"
+                            startIcon={<CheckCircleIcon />}
+                            onClick={() => navigate(`/student/topics/${topicId}`)}
+                            sx={{
+                                px: 4,
+                                py: 1.5,
+                                borderRadius: 10,
+                                textTransform: 'none',
+                                fontSize: '1.05rem',
+                                fontWeight: 600,
+                                boxShadow: '0px 8px 20px rgba(46, 125, 50, 0.25)'
+                            }}
+                        >
+                            Finish Topic
+                        </Button>
+                    )}
                 </Box>
             </Container>
         </Box>
