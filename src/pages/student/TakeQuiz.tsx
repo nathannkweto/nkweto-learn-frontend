@@ -96,7 +96,15 @@ export const TakeQuiz = () => {
     // ALREADY SUBMITTED VIEW
     if (existingSubmissionId) {
         return (
-            <Container maxWidth="sm" sx={{ mt: 8 }}>
+            <Container
+                maxWidth="sm"
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    minHeight: '80vh'
+                }}
+            >
                 <Paper elevation={0} sx={{ p: 5, textAlign: 'center', borderRadius: 3, border: '1px solid #edf2f7' }}>
                     <CheckCircleRoundedIcon color="success" sx={{ fontSize: 60, mb: 2 }} />
                     <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>
