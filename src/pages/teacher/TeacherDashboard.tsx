@@ -114,7 +114,8 @@ export const TeacherDashboard = () => {
                                 alignItems: { xs: 'flex-start', sm: 'center' },
                                 gap: 2
                             }}>
-                                <Box sx={{ flexGrow: 1 }}>
+                                {/* FIX 1: Added minWidth: 0 to allow text truncation to work properly in a flex layout */}
+                                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                                     <Stack
                                         direction="row"
                                         spacing={1}
@@ -127,7 +128,7 @@ export const TeacherDashboard = () => {
                                         <Chip
                                             label={topic.status}
                                             size="small"
-                                            variant="filled" // Fix: "soft" is not a standard variant
+                                            variant="filled"
                                             color={topic.status === 'published' ? 'success' : 'default'}
                                             sx={{ height: 20, fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase' }}
                                         />
@@ -151,6 +152,8 @@ export const TeacherDashboard = () => {
                                     fullWidth={isMobile}
                                     onClick={() => navigate(`/teacher/topics/${topic.id}`)}
                                     sx={{
+                                        // FIX 2: Added flexShrink: 0 to prevent the button from being squished
+                                        flexShrink: 0,
                                         borderRadius: 2,
                                         textTransform: 'none',
                                         fontWeight: 600,
