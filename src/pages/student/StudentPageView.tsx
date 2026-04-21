@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-    Box, Typography, Paper, Button, Divider, Container,
+    Box, Typography, Button, Divider, Container,
     CircularProgress, Alert, Breadcrumbs, Link, Stack
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -173,30 +173,28 @@ export const StudentPageView = () => {
 
                         if (type === 'CODE') {
                             return (
-                                <Paper
-                                    key={block.id}
-                                    elevation={0}
-                                    sx={{
-                                        backgroundColor: '#0f172a',
-                                        color: '#e2e8f0',
-                                        p: 3,
-                                        borderRadius: 3,
-                                        position: 'relative',
-                                        overflow: 'hidden'
-                                    }}
-                                >
-                                    {block.language && (
-                                        <Box sx={{ backgroundColor: '#1e293b', color: '#f8fafc', p: 2.5, borderRadius: 2, fontFamily: 'monospace', fontSize: '0.9rem' }}>
-                                            <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', mb: 1.5, borderBottom: '1px solid #334155', pb: 0.5 }}>
-                                                {block.language || 'Plain Text'}
-                                            </Typography>
-                                            <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{block.content}</pre>
-                                        </Box>
-                                    )}
-                                    <pre style={{ margin: 0, fontFamily: '"Fira Code", "Cascadia Code", monospace', fontSize: '0.95rem', lineHeight: 1.5 }}>
-                                        <code>{block.content}</code>
-                                    </pre>
-                                </Paper>
+                                    <Box
+                                        sx={{
+                                            backgroundColor: '#1e293b',
+                                            color: '#f8fafc',
+                                            p: 2.5,
+                                            borderRadius: 2,
+                                            fontFamily: 'monospace',
+                                            fontSize: '0.9rem'
+                                    }}>
+                                        <Typography
+                                            variant="caption"
+                                            sx={{
+                                                color: '#94a3b8',
+                                                display: 'block',
+                                                mb: 1.5,
+                                                borderBottom: '1px solid #334155',
+                                                pb: 0.5
+                                        }}>
+                                            {block.language || 'Plain Text'}
+                                        </Typography>
+                                        <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{block.content}</pre>
+                                    </Box>
                             );
                         }
 
