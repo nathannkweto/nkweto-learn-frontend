@@ -201,8 +201,6 @@ export const StudentPageView = () => {
                                 <Box
                                     key={block.id}
                                     sx={{
-                                        backgroundColor: '#111827',
-                                        color: '#94a3b8',
                                         p: 2.5,
                                         borderRadius: 2,
                                         fontFamily: 'monospace',
