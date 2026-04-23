@@ -199,9 +199,9 @@ export const StudentPageView = () => {
                         if (type === 'CODE') {
                             return (
                                 <Box sx={{
-                                    borderRadius: 3, // Match the 12px radius of your other cards
+                                    borderRadius: 1,
                                     overflow: 'hidden',
-                                    backgroundColor: '#1e293b', // The primary background color
+                                    backgroundColor: '#1e293b',
                                     border: '1px solid #334155'
                                 }}>
                                     {/* Header Bar */}
