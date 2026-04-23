@@ -198,7 +198,9 @@ export const StudentPageView = () => {
 
                         if (type === 'CODE') {
                             return (
-                                <Box sx={{
+                                <Box
+                                    key={block.id}
+                                    sx={{
                                     borderRadius: 1,
                                     overflow: 'hidden',
                                     backgroundColor: '#1e293b',
