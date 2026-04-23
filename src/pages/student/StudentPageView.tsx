@@ -199,25 +199,27 @@ export const StudentPageView = () => {
                         if (type === 'CODE') {
                             return (
                                 <Box sx={{
-                                    px: 2,
-                                    py: 1,
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    borderBottom: '1px solid #334155', // Subtle divider
-                                    backgroundColor: 'rgba(0,0,0,0.2)' // Slightly darker for the header
+                                    borderRadius: 3, // Match the 12px radius of your other cards
+                                    overflow: 'hidden',
+                                    backgroundColor: '#1e293b', // The primary background color
+                                    border: '1px solid #334155'
                                 }}>
-                                    <Typography
-                                        variant="caption"
-                                        sx={{
-                                            color: '#94a3b8',
-                                            display: 'block',
-                                            mb: 1.5,
-                                            borderBottom: '1px solid #334155',
-                                            pb: 0.5
-                                        }}>
-                                        {block.language || 'Plain Text'}
-                                    </Typography>
+                                    {/* Header Bar */}
+                                    <Box sx={{
+                                        px: 2,
+                                        py: 1,
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        borderBottom: '1px solid #334155', // Subtle divider
+                                        backgroundColor: 'rgba(0,0,0,0.2)' // Slightly darker for the header
+                                    }}>
+                                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                            {block.language || 'text'}
+                                        </Typography>
+                                    </Box>
+
+                                    {/* The Highlighter */}
                                     <SyntaxHighlighter
                                         language={block.language?.toLowerCase() || 'text'}
                                         style={atomDark}
@@ -226,7 +228,7 @@ export const StudentPageView = () => {
                                             padding: '20px',
                                             fontSize: '0.85rem',
                                             lineHeight: '1.6',
-                                            backgroundColor: 'transparent',
+                                            backgroundColor: 'transparent', // Inherits #1e293b from parent Box
                                         }}
                                         codeTagProps={{
                                             style: { fontFamily: "'Fira Code', 'Courier New', monospace" }
