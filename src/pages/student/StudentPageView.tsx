@@ -198,14 +198,15 @@ export const StudentPageView = () => {
 
                         if (type === 'CODE') {
                             return (
-                                <Box
-                                    key={block.id}
-                                    sx={{
-                                        p: 2.5,
-                                        borderRadius: 2,
-                                        fontFamily: 'monospace',
-                                        fontSize: '0.9rem'
-                                    }}>
+                                <Box sx={{
+                                    px: 2,
+                                    py: 1,
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    borderBottom: '1px solid #334155', // Subtle divider
+                                    backgroundColor: 'rgba(0,0,0,0.2)' // Slightly darker for the header
+                                }}>
                                     <Typography
                                         variant="caption"
                                         sx={{
@@ -223,7 +224,12 @@ export const StudentPageView = () => {
                                         customStyle={{
                                             margin: 0,
                                             padding: '20px',
-                                            borderRadius: '0 0 8px 8px',
+                                            fontSize: '0.85rem',
+                                            lineHeight: '1.6',
+                                            backgroundColor: 'transparent',
+                                        }}
+                                        codeTagProps={{
+                                            style: { fontFamily: "'Fira Code', 'Courier New', monospace" }
                                         }}
                                         wrapLongLines={true}
                                     >
