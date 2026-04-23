@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 export const setupAxiosInterceptors = (logoutCallback: () => void) => {
-    // Set your Spring Boot API base URL here
     axios.defaults.baseURL = 'https://backend-541923942410.us-east1.run.app/api/v1';
 
     // Request Interceptor: Attach the token

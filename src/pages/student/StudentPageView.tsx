@@ -4,6 +4,9 @@ import {
     Box, Typography, Button, Divider, Container,
     CircularProgress, Alert, Breadcrumbs, Link, Stack
 } from '@mui/material';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+// You can choose different themes (e.g., atomDark, solarizedlight, dracula)
+import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -216,7 +219,18 @@ export const StudentPageView = () => {
                                         }}>
                                         {block.language || 'Plain Text'}
                                     </Typography>
-                                    <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{block.content}</pre>
+                                    <SyntaxHighlighter
+                                        language={block.language?.toLowerCase() || 'text'}
+                                        style={atomDark}
+                                        customStyle={{
+                                            margin: 0,
+                                            padding: '20px',
+                                            borderRadius: '0 0 8px 8px',
+                                        }}
+                                        wrapLongLines={true}
+                                    >
+                                        {block.content}
+                                    </SyntaxHighlighter>
                                 </Box>
                             );
                         }
