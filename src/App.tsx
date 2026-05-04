@@ -15,6 +15,7 @@ import { CreatePage } from "./pages/teacher/CreatePage.tsx";
 import {StudentPageView} from "./pages/student/StudentPageView.tsx";
 import {ReviewResponse} from "./pages/teacher/ReviewResponse.tsx";
 import {QuizSubmissions} from "./pages/teacher/QuizSubmissions.tsx";
+import {StudentLayout} from "./pages/student/StudentLayout.tsx";
 
 function App() {
   return (
@@ -39,10 +40,12 @@ function App() {
 
               {/* Protected Student Routes */}
               <Route element={<ProtectedRoute allowedRoles={['student']} />}>
-                <Route path="/student/dashboard" element={<StudentDashboard />} />
-                <Route path="/student/topics/:topicId" element={<StudentTopicDetails />} />
-                <Route path="/student/quizzes/:quizId/take" element={<TakeQuiz />} />
-                <Route path="/student/topics/:topicId/pages/:pageId" element={<StudentPageView />} />
+                <Route element={<StudentLayout />}>
+                  <Route path="/student/dashboard" element={<StudentDashboard />} />
+                  <Route path="/student/topics/:topicId" element={<StudentTopicDetails />} />
+                  <Route path="/student/quizzes/:quizId/take" element={<TakeQuiz />} />
+                  <Route path="/student/topics/:topicId/pages/:pageId" element={<StudentPageView />} />
+                </Route>
               </Route>
 
               {/* Fallback Route */}
