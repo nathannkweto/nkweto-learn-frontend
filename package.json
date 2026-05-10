@@ -8,7 +8,7 @@
     "api:generate": "orval",
     "predev": "npm run api:download && npm run api:generate && npm run generate",
     "dev": "vite",
-    "prebuild": "npm run api:download && npm run api:generate",
+    "prebuild": "npm run api:download && npm run api:generate && npm run generate",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
