@@ -1,23 +1,23 @@
 import axios from 'axios';
 
-export const setupAxiosInterceptors = (logoutCallback: () => void) => {
-    axios.defaults.baseURL = 'https://backend-541923942410.us-east1.run.app/api/v1';
+axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
 
-    // Request Interceptor: Attach the token
+export const setupAxiosInterceptors = (logoutCallback: () => void) => {
+    axios.interceptors.request.clear();
+    axios.interceptors.response.clear();
+
     axios.interceptors.request.use((config) => {
         const token = localStorage.getItem('token');
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+            config.headers.set('Authorization', `Bearer ${token}`);
         }
         return config;
     }, (error) => Promise.reject(error));
 
-    // Response Interceptor: Handle 401s globally
     axios.interceptors.response.use(
         (response) => response,
         (error) => {
-            if (error.response && error.response.status === 401) {
-                console.warn('Unauthorized! Logging out...');
+            if (error.response?.status === 401) {
                 logoutCallback();
             }
             return Promise.reject(error);

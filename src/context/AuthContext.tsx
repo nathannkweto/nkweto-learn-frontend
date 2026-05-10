@@ -1,7 +1,9 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useState, useEffect, useCallback } from 'react';
-import type { ReactNode } from 'react'; // Fix: Explicit type import
+import type { ReactNode } from 'react';
 import type { User } from '../api/generated/models';
 import { setupAxiosInterceptors } from '../api/axiosSetup';
+import { getOpenAPIDefinition } from '../api/generated/endpoints';
 
 export interface AuthContextType {
     user: User | null;
@@ -11,15 +13,15 @@ export interface AuthContextType {
     isAuthenticated: boolean;
 }
 
-// Export the context so the hook can access it from another file
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const api = getOpenAPIDefinition();
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
     const [isInitializing, setIsInitializing] = useState(true);
 
-    // Fix: Moved logout ABOVE the useEffect and wrapped in useCallback
     const logout = useCallback(() => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -27,21 +29,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
     }, []);
 
-    // Initialize auth state from local storage on first load
     useEffect(() => {
-        const storedToken = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
+        const initializeAuth = async () => {
+            const storedToken = localStorage.getItem('token');
+            setupAxiosInterceptors(logout);
 
-        if (storedToken && storedUser) {
-            setToken(storedToken);
-            setUser(JSON.parse(storedUser));
-        }
+            if (storedToken) {
+                try {
+                    // FIX: Using the exact method name from your error log
+                    const response = await api.authMeGet();
+                    if (response.data) {
+                        setToken(storedToken);
+                        setUser(response.data);
+                        localStorage.setItem('user', JSON.stringify(response.data));
+                    }
+                } catch {
+                    // FIX: Removed unused 'error' variable
+                    console.warn('Token validation failed on startup. Logging out.');
+                    logout();
+                }
+            }
 
-        // Set up global Axios interceptors and pass it the logout function
-        setupAxiosInterceptors(logout);
+            setIsInitializing(false);
+        };
 
-        setIsInitializing(false);
-    }, [logout]); // Added logout to dependency array
+        // FIX: Added 'void' to explicitly ignore the returned promise, satisfying the ESLint rule
+        void initializeAuth();
+    }, [logout]);
 
     const login = (newToken: string, newUser: User) => {
         localStorage.setItem('token', newToken);
@@ -51,7 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     if (isInitializing) {
-        return null; // Or a MUI <CircularProgress /> to prevent layout shift
+        return null;
     }
 
     return (

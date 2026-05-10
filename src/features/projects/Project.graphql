@@ -1,0 +1,14 @@
+# 1. Define the fragment (reusable piece of data)
+fragment ProjectFields on ProjectDetail {
+    id
+    title
+    description
+    checkRepositoryUrl
+}
+
+# 2. Define the query using the fragment
+query GetProject($id: ID!) {
+    project(id: $id) {
+        ...ProjectFields
+    }
+}

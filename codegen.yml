@@ -1,0 +1,11 @@
+schema: ${VITE_API_BASE_URL}/graphql
+
+documents:
+  - "src/**/*.graphql"
+
+generates:
+  src/graphql/generated/:
+    preset: client
+    config:
+      useTypeImports: true
+    plugins: []

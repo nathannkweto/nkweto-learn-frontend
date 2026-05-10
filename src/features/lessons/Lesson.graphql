@@ -1,0 +1,16 @@
+fragment LessonFields on LessonDetail {
+    id
+    title
+    description
+    orderIndex # NEW
+    pages {
+        id
+        orderIndex # NEW (Useful for sorting pages in the UI sidebar/nav!)
+    }
+}
+
+query GetLesson($id: ID!) {
+    lesson(id: $id) {
+        ...LessonFields
+    }
+}

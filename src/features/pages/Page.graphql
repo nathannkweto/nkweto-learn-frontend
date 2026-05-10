@@ -1,0 +1,33 @@
+# Fragment for the blocks
+fragment PageBlockFields on PageBlock {
+    id
+    type
+    content
+    language
+    orderIndex # NEW
+}
+
+# Fragment for the page, composing the block fragment
+fragment PageFields on PageDetail {
+    id
+    title
+    orderIndex # NEW
+    nextPageId
+    prevPageId
+    lesson {
+        id
+        project {
+            id
+        }
+    }
+    blocks {
+        ...PageBlockFields
+    }
+}
+
+# The main query
+query GetPage($id: ID!) {
+    page(id: $id) {
+        ...PageFields
+    }
+}

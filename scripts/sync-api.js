@@ -1,6 +1,7 @@
 import fs from 'fs';
 
-const API_URL = 'https://backend-541923942410.us-east1.run.app/api/v1/v3/api-docs';
+const BASE_URL = process.env.VITE_API_BASE_URL;
+const API_URL = `${BASE_URL}/v3/api-docs`;
 const OUTPUT_PATH = './openapi.yaml';
 
 async function fetchApiDocs() {

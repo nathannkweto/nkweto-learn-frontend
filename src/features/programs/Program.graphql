@@ -1,0 +1,41 @@
+# Fragment for list views (Home/Dashboard/Browse)
+fragment ProgramCardFields on ProgramCard {
+    id
+    title
+    description
+    isEnrolled
+    lessons {
+        id
+        title
+    }
+}
+
+# Fragment for the Detail views
+fragment ProgramDetailFields on ProgramDetail {
+    id
+    title
+    description
+    isEnrolled
+    lessons {
+        id
+        title
+    }
+}
+
+query GetBrowsePrograms {
+    browsePrograms {
+        ...ProgramCardFields
+    }
+}
+
+query GetDashboardPrograms {
+    dashboardPrograms {
+        ...ProgramCardFields
+    }
+}
+
+query GetProgram($id: ID!) {
+    program(id: $id) {
+        ...ProgramDetailFields
+    }
+}

@@ -2,57 +2,54 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CssBaseline } from '@mui/material';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { Login } from './pages/Login';
-import { Register } from './pages/Register';
-import { TeacherDashboard } from './pages/teacher/TeacherDashboard';
-import { TopicDetails } from './pages/teacher/TopicDetails';
-import { QuizBuilder } from './pages/teacher/QuizBuilder';
-import { StudentDashboard } from './pages/student/StudentDashboard';
-import { StudentTopicDetails } from './pages/student/StudentTopicDetails';
-import { TakeQuiz } from './pages/student/TakeQuiz';
-import { PageEditor } from "./pages/teacher/PageEditor.tsx";
-import { CreatePage } from "./pages/teacher/CreatePage.tsx";
-import {StudentPageView} from "./pages/student/StudentPageView.tsx";
-import {ReviewResponse} from "./pages/teacher/ReviewResponse.tsx";
-import {QuizSubmissions} from "./pages/teacher/QuizSubmissions.tsx";
-import {StudentLayout} from "./pages/student/StudentLayout.tsx";
+import { AppLayout } from "./layouts/AppLayout.tsx";
+
+// Public Pages
+import { Login } from './features/auth/Login';
+import { Register } from './features/auth/Register';
+
+// Unified Main Nav Pages
+import { HomePage } from './features/dashboard/HomePage.tsx'; // Merged from Teacher/Student Dashboard
+import {LessonScreen} from "./features/lessons/LessonScreen.tsx";
+import {ProgramsPage} from "./features/programs/ProgramsPage.tsx";
+import {ProgramDetail} from "./features/programs/ProgramDetailPage.tsx";
+import {PageDetail} from "./features/pages/PageDetail.tsx";
+import {ProjectPage} from "./features/projects/ProjectPage.tsx";
 
 function App() {
   return (
-        <AuthProvider>
-          <CssBaseline />
-          <HashRouter>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
+      <AuthProvider>
+        <CssBaseline />
+        <HashRouter>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
-              {/* Protected Teacher Routes */}
-              <Route element={<ProtectedRoute allowedRoles={['teacher']} />}>
-                <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
-                <Route path="/teacher/topics/:topicId" element={<TopicDetails />} />
-                <Route path="/teacher/topics/:topicId/create-quiz" element={<QuizBuilder />} />
-                <Route path="/teacher/quizzes/:quizId/submissions" element={<QuizSubmissions />} />
-                <Route path="/teacher/submissions/:submissionId" element={<ReviewResponse />} />
-                <Route path="/teacher/topics/:topicId/pages/create" element={<CreatePage />} />
-                <Route path="/teacher/pages/:pageId/edit" element={<PageEditor />} />
+            {/* Protected Routes - Accessible by ANY logged-in user */}
+            {/* Note: Update ProtectedRoute to allow both roles, or remove the allowedRoles prop entirely if it just checks auth */}
+            <Route element={<ProtectedRoute allowedRoles={['teacher', 'student']} />}>
+              <Route element={<AppLayout />}>
+
+                {/* Main Navigation Routes */}
+                <Route path="/" element={<HomePage />} />
+                  <Route path="/programs" element={<ProgramsPage />} />
+                  <Route path="/programs/:programId" element={<ProgramDetail />} />
+
+                  {/* Deep links from your navigate() functions */}
+                <Route path="/lessons/:lessonId" element={<LessonScreen />} />
+                <Route path="/lessons/:lessonId/pages" element={<PageDetail />} />
+
+
+                  <Route path="/projects/:projectId" element={<ProjectPage />} />
               </Route>
+            </Route>
 
-              {/* Protected Student Routes */}
-              <Route element={<ProtectedRoute allowedRoles={['student']} />}>
-                <Route element={<StudentLayout />}>
-                  <Route path="/student/dashboard" element={<StudentDashboard />} />
-                  <Route path="/student/topics/:topicId" element={<StudentTopicDetails />} />
-                  <Route path="/student/quizzes/:quizId/take" element={<TakeQuiz />} />
-                  <Route path="/student/topics/:topicId/pages/:pageId" element={<StudentPageView />} />
-                </Route>
-              </Route>
-
-              {/* Fallback Route */}
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
-          </HashRouter>
-        </AuthProvider>
+            {/* Fallback Route */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </HashRouter>
+      </AuthProvider>
   );
 }
 
