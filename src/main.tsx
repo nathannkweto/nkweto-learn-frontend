@@ -10,7 +10,6 @@ import {
 import { ApolloProvider } from '@apollo/client/react';
 import { setContext } from '@apollo/client/link/context';
 import {ColorModeProvider} from "./context/ColorModeProvider.tsx";
-import {BrowserRouter} from "react-router-dom";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const httpLink = new HttpLink({
@@ -35,13 +34,11 @@ const client = new ApolloClient({
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-        <BrowserRouter basename="/nkweto-learn-frontend">
         <ApolloProvider client={client}>
             <ColorModeProvider>
                 <CssBaseline />
                 <App />
             </ColorModeProvider>
         </ApolloProvider>
-        </BrowserRouter>
     </React.StrictMode>,
 );
