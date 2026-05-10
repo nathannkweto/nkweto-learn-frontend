@@ -44,6 +44,17 @@ export const TeacherPageView: React.FC<Props> = ({
     const [isSaving, setIsSaving] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+    // --- Title State ---
+    const [title, setTitle] = useState<string>(data.title || '');
+    const [prevTitleData, setPrevTitleData] = useState(data.title);
+
+    // Sync title if the underlying page data changes (e.g., user navigates to next page)
+    if (data.title !== prevTitleData) {
+        setPrevTitleData(data.title);
+        setTitle(data.title || '');
+    }
+
+    // --- Blocks State ---
     const [blocks, setBlocks] = useState<PageBlockFieldsFragment[]>(
         (unmaskedBlocks as PageBlockFieldsFragment[]) || []
     );
@@ -76,24 +87,34 @@ export const TeacherPageView: React.FC<Props> = ({
         setIsSaving(true);
         setErrorMsg(null);
         try {
+            // 1. Update the Page Title (if it changed)
+            if (title !== data.title) {
+                await api.updatePage(parseInt(data.id, 10), {
+                    title: title
+                });
+            }
+
+            // 2. Update/Create Blocks
             await Promise.all(
-                blocks.map((block) => {
+                blocks.map((block, index) => {
                     if (block.id.startsWith('new-')) {
                         return api.createBlock(parseInt(data.id, 10), {
                             type: block.type as "TEXT" | "CODE",
                             content: block.content,
                             language: block.language ?? undefined,
+                            orderIndex: index,
                         });
                     }
                     return api.updateBlock(parseInt(block.id, 10), {
                         content: block.content,
                         language: block.language ?? undefined,
+                        orderIndex: index,
                     });
                 })
             );
             setIsEditing(false);
         } catch (err) {
-            console.error('Failed to save page blocks:', err);
+            console.error('Failed to save page:', err);
             setErrorMsg('Failed to save changes. Please try again.');
         } finally {
             setIsSaving(false);
@@ -109,9 +130,7 @@ export const TeacherPageView: React.FC<Props> = ({
                 minHeight: '100vh',
                 display: 'flex',
                 flexDirection: 'column',
-                '& .ql-editor': {
-                    color: 'text.primary',
-                },
+                '& .ql-editor': { color: 'text.primary' },
                 '& .ql-toolbar': {
                     borderColor: 'divider',
                     backgroundColor: 'background.default',
@@ -119,9 +138,7 @@ export const TeacherPageView: React.FC<Props> = ({
                     '& .ql-fill': { fill: theme.palette.text.primary },
                     '& .ql-picker': { color: 'text.primary' },
                 },
-                '& .ql-container': {
-                    borderColor: 'divider',
-                },
+                '& .ql-container': { borderColor: 'divider' },
                 '& .ql-tooltip': {
                     backgroundColor: 'background.paper',
                     borderColor: 'divider',
@@ -132,15 +149,36 @@ export const TeacherPageView: React.FC<Props> = ({
         >
             {errorMsg && <Alert severity="error" sx={{ mb: 3 }}>{errorMsg}</Alert>}
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                <Typography variant="h3" sx={{ fontWeight: 700 }}>
-                    {data.title}
-                </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, gap: 2 }}>
+
+                {/* Dynamically render TextField or Typography based on isEditing */}
+                {isEditing ? (
+                    <TextField
+                        fullWidth
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        disabled={isSaving}
+                        variant="outlined"
+                        placeholder="Enter Page Title"
+                        sx={{
+                            '& .MuiInputBase-input': {
+                                fontSize: '2rem',
+                                fontWeight: 700,
+                            }
+                        }}
+                    />
+                ) : (
+                    <Typography variant="h3" sx={{ fontWeight: 700, flexGrow: 1 }}>
+                        {title}
+                    </Typography>
+                )}
+
                 <Button
                     variant="contained"
                     onClick={isEditing ? handleSave : () => setIsEditing(true)}
                     disabled={isSaving}
                     startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : null}
+                    sx={{ flexShrink: 0 }}
                 >
                     {isSaving ? 'Saving...' : isEditing ? 'Save Changes' : 'Edit Page'}
                 </Button>
@@ -185,9 +223,12 @@ export const TeacherPageView: React.FC<Props> = ({
                                             disabled={isSaving}
                                             sx={{ mb: 1, width: 200 }}
                                         >
-                                            <MenuItem value="javascript">JavaScript</MenuItem>
-                                            <MenuItem value="java">Java</MenuItem>
-                                            <MenuItem value="python">Python</MenuItem>
+                                            <MenuItem value="html">HTML</MenuItem>
+                                            <MenuItem value="css">CSS</MenuItem>
+                                            <MenuItem value="javascript">JAVASCRIPT</MenuItem>
+                                            <MenuItem value="jsx">JSX</MenuItem>
+                                            <MenuItem value="typescript">TYPESCRIPT</MenuItem>
+                                            <MenuItem value="tsx">TSX</MenuItem>
                                         </TextField>
                                         <TextField
                                             fullWidth
