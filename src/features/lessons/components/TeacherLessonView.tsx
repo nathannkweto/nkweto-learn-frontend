@@ -14,7 +14,7 @@ const api = getOpenAPIDefinition();
 
 interface Props {
     lesson: FragmentType<typeof LessonFieldsFragmentDoc>;
-    onGoToPages: (pageId: string) => void;
+    onGoToPages: (orderIndex: number) => void;
 }
 
 const quillThemeOverrides = {
@@ -72,7 +72,7 @@ export const TeacherLessonView: React.FC<Props> = ({ lesson, onGoToPages }) => {
 
     const handleGoToPagesAction = async () => {
         if (hasPages) {
-            onGoToPages(data.pages[0].id);
+            onGoToPages(data.pages[0].orderIndex);
         } else {
             setIsCreatingPage(true);
             setErrorMsg(null);
@@ -81,8 +81,8 @@ export const TeacherLessonView: React.FC<Props> = ({ lesson, onGoToPages }) => {
                     title: 'New Page',
                 });
 
-                if (response.data && response.data.id !== undefined) {
-                    onGoToPages(String(response.data.id));
+                if (response.data && response.data.orderIndex !== undefined) {
+                    onGoToPages(response.data.orderIndex);
                 } else {
                     console.error("No ID returned from page creation");
                     setErrorMsg("Failed to load the new page. Please refresh and try again.");
