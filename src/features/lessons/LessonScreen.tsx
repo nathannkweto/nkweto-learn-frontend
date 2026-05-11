@@ -54,7 +54,7 @@ export const LessonScreen: React.FC = () => {
         }
     };
 
-    const handleGoToPages = (orderIndex: string) => {
+    const handleGoToPages = (orderIndex: number) => {
         navigate(`/lessons/${lessonId}/pages?page=${orderIndex}`);
     };
 
