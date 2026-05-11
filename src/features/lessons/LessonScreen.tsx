@@ -45,17 +45,17 @@ export const LessonScreen: React.FC = () => {
     }
 
     const handleStart = () => {
-        const firstPageId = unmaskedLesson.pages?.[0]?.id;
+        const firstPageOrderIndex = unmaskedLesson.pages?.[0]?.orderIndex;
 
-        if (firstPageId) {
-            navigate(`/lessons/${lessonId}/pages?page=${firstPageId}`);
+        if (firstPageOrderIndex !== undefined) {
+            navigate(`/lessons/${lessonId}/pages?page=${firstPageOrderIndex}`);
         } else {
             navigate(`/lessons/${lessonId}/pages`);
         }
     };
 
-    const handleGoToPages = (pageId: string) => {
-        navigate(`/lessons/${lessonId}/pages?page=${pageId}`);
+    const handleGoToPages = (orderIndex: string) => {
+        navigate(`/lessons/${lessonId}/pages?page=${orderIndex}`);
     };
 
     const isTeacher = user?.role === 'teacher';
