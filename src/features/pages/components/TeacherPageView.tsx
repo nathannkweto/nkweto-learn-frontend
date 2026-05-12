@@ -229,6 +229,7 @@ export const TeacherPageView: React.FC<Props> = ({
                                             <MenuItem value="jsx">JSX</MenuItem>
                                             <MenuItem value="typescript">TYPESCRIPT</MenuItem>
                                             <MenuItem value="tsx">TSX</MenuItem>
+                                            <MenuItem value="bash">BASH</MenuItem>
                                             <MenuItem value="txt">TXT</MenuItem>
                                         </TextField>
                                         <TextField
